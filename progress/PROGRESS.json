@@ -2,32 +2,35 @@
   "schema_version": 1,
   "project": "vega",
   "target_commits": 1000000,
-  "current_commits": 203,
-  "next_commit_number": 204,
-  "remaining_commits": 999797,
+  "current_commits": 705,
+  "next_commit_number": 706,
+  "remaining_commits": 999295,
   "era": 0,
-  "epoch": 0,
+  "epoch": 7,
   "campaign": 0,
-  "loop": 0,
-  "batch": 0,
-  "status": "planned",
+  "loop": 6,
+  "batch": 1,
+  "status": "in_progress",
   "blocked_reason": null,
   "primary_dimensions": [
-    "documentation",
-    "configuration",
-    "ci_cd"
+    "resilience",
+    "error_handling",
+    "test_coverage"
   ],
   "secondary_dimensions": [
-    "test_coverage",
-    "monitoring"
+    "performance",
+    "security"
   ],
   "active_factories": [
     "test",
     "ops",
     "config",
     "knowledge",
-    "maintenance"
+    "maintenance",
+    "expansion"
   ],
-  "unlocked_eras": [0],
-  "notes": "Era 0 bootstrap: land plan + orchestration, then run campaigns 0.1–0.9 toward commit 1000."
+  "unlocked_eras": [
+    0
+  ],
+  "notes": "Factory ledger tip at commit 705."
 }
