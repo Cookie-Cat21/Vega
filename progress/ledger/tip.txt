@@ -1,10 +1,10 @@
-commit=162338
+commit=162339
 target=1000000
 era=1
 epoch=6
 campaign=2
 loop=3
 batch=1
-dimension=kubernetes
-factory=ops
-remaining=837662
+dimension=terraform
+factory=config
+remaining=837661
