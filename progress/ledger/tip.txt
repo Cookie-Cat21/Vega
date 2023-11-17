@@ -1,10 +1,10 @@
-commit=200325
+commit=200326
 target=1000000
 era=2
 epoch=0
 campaign=0
 loop=3
-batch=0
-dimension=resilience
-factory=config
-remaining=799675
+batch=1
+dimension=error_handling
+factory=knowledge
+remaining=799674
