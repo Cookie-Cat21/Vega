@@ -2,24 +2,24 @@
   "schema_version": 1,
   "project": "vega",
   "target_commits": 1000000,
-  "current_commits": 209000,
-  "next_commit_number": 209001,
-  "remaining_commits": 791000,
+  "current_commits": 210000,
+  "next_commit_number": 210001,
+  "remaining_commits": 790000,
   "era": 2,
   "epoch": 0,
-  "campaign": 8,
+  "campaign": 9,
   "loop": 9,
   "batch": 3,
   "status": "in_progress",
   "blocked_reason": null,
   "primary_dimensions": [
-    "code_quality",
-    "configuration",
-    "docker"
+    "resilience",
+    "error_handling",
+    "test_coverage"
   ],
   "secondary_dimensions": [
-    "kubernetes",
-    "terraform"
+    "performance",
+    "security"
   ],
   "active_factories": [
     "test",
@@ -34,5 +34,5 @@
     1,
     2
   ],
-  "notes": "Factory ledger tip at commit 209000."
+  "notes": "Factory ledger tip at commit 210000."
 }
