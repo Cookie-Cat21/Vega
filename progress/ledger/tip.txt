@@ -1,10 +1,10 @@
-commit=183655
+commit=183656
 target=1000000
 era=1
 epoch=8
 campaign=3
 loop=6
 batch=2
-dimension=ci_cd
-factory=test
-remaining=816345
+dimension=monitoring
+factory=ops
+remaining=816344
