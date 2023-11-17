@@ -1,10 +1,10 @@
-commit=231748
+commit=231749
 target=1000000
 era=2
 epoch=3
 campaign=1
 loop=7
 batch=1
-dimension=flink_tuning
-factory=knowledge
-remaining=768252
+dimension=data_quality
+factory=maintenance
+remaining=768251
