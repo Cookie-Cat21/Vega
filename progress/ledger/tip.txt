@@ -1,10 +1,10 @@
-commit=773340
+commit=773341
 target=1000000
 era=7
 epoch=7
 campaign=3
 loop=3
 batch=1
-dimension=resilience
-factory=expansion
-remaining=226660
+dimension=error_handling
+factory=test
+remaining=226659
