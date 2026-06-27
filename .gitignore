@@ -29,8 +29,9 @@ dependency-reduced-pom.xml
 .DS_Store
 Thumbs.db
 
-# Docker
-docker-compose.override.yml
+# Local runtime data
+data/
+
 
 # Terraform
 terraform/.terraform/

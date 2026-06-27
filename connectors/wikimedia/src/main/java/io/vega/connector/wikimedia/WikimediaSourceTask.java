@@ -1,6 +1,7 @@
 package io.vega.connector.wikimedia;
 
 import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
@@ -59,6 +60,7 @@ public class WikimediaSourceTask extends SourceTask {
     private SourceRecord toSourceRecord(WikiEvent event) {
         lastTimestamp = event.getTimestamp();
         Map<String, Long> sourceOffset = Collections.singletonMap("position", lastTimestamp);
+        SchemaAndValue value = AvroConnect.toConnect(event);
 
         return new SourceRecord(
                 SOURCE_PARTITION,
@@ -66,8 +68,8 @@ public class WikimediaSourceTask extends SourceTask {
                 config.topic(),
                 Schema.STRING_SCHEMA,
                 event.getTitle(),
-                null,
-                event
+                value.schema(),
+                value.value()
         );
     }
 

@@ -14,7 +14,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      CLUSTER_ID: VmVnYVN0cmVhbWluZ0xha2U
+      CLUSTER_ID: h4VEC93iQ3WfvHG4qGfYeQ
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
@@ -23,7 +23,7 @@ services:
       KAFKA_JMX_HOSTNAME: localhost
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
     volumes:
-      - kafka-data:/tmp/kraft-combined-logs
+      - ./data/kafka:/tmp/kraft-combined-logs
     networks:
       - vega
     healthcheck:
@@ -50,7 +50,9 @@ services:
       - vega
 
   kafka-connect:
-    image: confluentinc/cp-kafka-connect:7.6.0
+    build:
+      context: .
+      dockerfile: docker/kafka-connect/Dockerfile
     hostname: kafka-connect
     container_name: vega-kafka-connect
     depends_on:
@@ -73,12 +75,10 @@ services:
       CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
       CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components,/connectors
     volumes:
       - connect-plugins:/connectors
-      - ./connectors/wikimedia/target/vega-wikimedia-connector-1.0.0-SNAPSHOT.jar:/usr/share/java/vega-wikimedia-connector/vega-wikimedia-connector.jar:ro
-      - ./connectors/eonet/target/vega-eonet-connector-1.0.0-SNAPSHOT.jar:/usr/share/java/vega-eonet-connector/vega-eonet-connector.jar:ro
-      - ./connectors/slnews/target/vega-slnews-connector-1.0.0-SNAPSHOT.jar:/usr/share/java/vega-slnews-connector/vega-slnews-connector.jar:ro
     networks:
       - vega
 
