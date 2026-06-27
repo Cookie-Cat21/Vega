@@ -110,6 +110,8 @@ services:
       - "8081:8081"
     command: jobmanager
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_URL: http://schema-registry:8081
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         state.backend: hashmap
@@ -117,8 +119,8 @@ services:
         state.savepoints.dir: file:///tmp/flink-savepoints
         execution.checkpointing.interval: 60000
     volumes:
-      - flink-checkpoints:/tmp/flink-checkpoints
-      - flink-savepoints:/tmp/flink-savepoints
+      - ./data/flink-checkpoints:/tmp/flink-checkpoints
+      - ./data/flink-savepoints:/tmp/flink-savepoints
       - ./flink-jobs/target/vega-flink-jobs-1.0.0-SNAPSHOT.jar:/opt/flink/usrlib/vega-flink-jobs.jar:ro
     networks:
       - vega
@@ -131,15 +133,18 @@ services:
       - flink-jobmanager
     command: taskmanager
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_URL: http://schema-registry:8081
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
-        taskmanager.numberOfTaskSlots: 4
+        taskmanager.numberOfTaskSlots: 12
         state.backend: hashmap
         state.checkpoints.dir: file:///tmp/flink-checkpoints
         state.savepoints.dir: file:///tmp/flink-savepoints
     volumes:
-      - flink-checkpoints:/tmp/flink-checkpoints
-      - flink-savepoints:/tmp/flink-savepoints
+      - ./data/flink-checkpoints:/tmp/flink-checkpoints
+      - ./data/flink-savepoints:/tmp/flink-savepoints
+      - ./data/vega-output:/tmp/vega-output
       - ./flink-jobs/target/vega-flink-jobs-1.0.0-SNAPSHOT.jar:/opt/flink/usrlib/vega-flink-jobs.jar:ro
     networks:
       - vega
@@ -147,8 +152,6 @@ services:
 volumes:
   kafka-data:
   connect-plugins:
-  flink-checkpoints:
-  flink-savepoints:
 
 networks:
   vega:

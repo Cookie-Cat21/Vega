@@ -59,15 +59,25 @@ public class SLNewsRssClient {
 
     private String fetchWithRetry(String feedUrl) throws IOException, InterruptedException {
         long backoffMs = 1_000L;
-        while (true) {
+        int attempts = 0;
+        final int maxAttempts = 5;
+        IOException lastError = null;
+
+        while (attempts < maxAttempts) {
             try {
                 return doRequest(feedUrl);
             } catch (IOException e) {
+                lastError = e;
+                attempts++;
+                if (attempts >= maxAttempts) {
+                    break;
+                }
                 LOG.warn("RSS fetch failed for {}, retrying in {}ms: {}", feedUrl, backoffMs, e.getMessage());
                 Thread.sleep(backoffMs);
                 backoffMs = Math.min(backoffMs * 2, MAX_BACKOFF_MS);
             }
         }
+        throw lastError != null ? lastError : new IOException("RSS fetch failed for " + feedUrl);
     }
 
     private String doRequest(String feedUrl) throws IOException, InterruptedException {

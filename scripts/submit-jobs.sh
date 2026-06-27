@@ -19,7 +19,7 @@ for job in "${JOBS[@]}"; do
   JAR_ID=$(curl -s "${FLINK_REST}/jars" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
   curl -s -X POST "${FLINK_REST}/jars/${JAR_ID}/run" \
     -H "Content-Type: application/json" \
-    -d "{\"entryClass\": \"${job}\", \"parallelism\": 2}"
+    -d "{\"entryClass\": \"${job}\", \"parallelism\": 1}"
   echo ""
 done
 
