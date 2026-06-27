@@ -1,0 +1,28 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: aggregation-job
+  namespace: vega
+spec:
+  image: ${ACR_LOGIN_SERVER}/vega-flink-jobs:1.0.0
+  flinkVersion: v1_20
+  flinkConfiguration:
+    state.checkpoints.dir: wasbs://${FLINK_CHECKPOINT_CONTAINER}@${FLINK_CHECKPOINT_ACCOUNT}.blob.core.windows.net/checkpoints/aggregation
+    execution.checkpointing.interval: "60000"
+    execution.checkpointing.mode: EXACTLY_ONCE
+  serviceAccount: flink
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+    replicas: 2
+  job:
+    jarURI: local:///opt/flink/usrlib/vega-flink-jobs.jar
+    entryClass: io.vega.flink.jobs.AggregationJob
+    parallelism: 2
+    upgradeMode: savepoint
+    state: running
