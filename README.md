@@ -2,6 +2,21 @@
 
 Vega tracks global natural events and real-time human reactions to them. A wildfire starts (NASA EONET) → Wikipedia edits spike → Vega captures the correlation live.
 
+## What is Vega?
+
+Vega is **not** a finished product like [World Monitor](https://world-monitor.com/) — it's the **real-time data engine underneath** something like that.
+
+| | World Monitor | Vega |
+|---|---|---|
+| **What it is** | A live dashboard/map for the public | A streaming data pipeline (Kafka + Flink + lakehouse) |
+| **Geographic scope** | Global news, markets, conflicts | **Global** signals (NASA disasters + Wikipedia reactions worldwide) |
+| **Sri Lanka** | Not the focus | **One extra local news feed** (Lanka Lens RSS) — not a SL-only product |
+| **Core idea** | Show what's happening on a map | Detect when the world reacts to a natural event in real time |
+
+**The signature Vega insight:** when a wildfire or earthquake hits, Wikipedia editors update related articles within minutes. Vega ingests NASA EONET (what happened) and Wikimedia EventStreams (how people reacted), then the `CorrelationJob` links them — e.g. *"Wildfire in Australia → 47 edits on related articles within 12 minutes."*
+
+Lanka Lens (Ada Derana, etc.) adds Sri Lankan news as a **third signal** — useful for local context, but the pipeline is built for global event–reaction correlation. A future UI could look World-Monitor-esque; today Grafana and Kafka UI are the operator views.
+
 ## Architecture
 
 ```mermaid
@@ -9,6 +24,7 @@ flowchart LR
     subgraph sources [Data Sources]
         Wiki[Wikimedia SSE]
         EONET[NASA EONET REST]
+        SLNews[Sri Lanka RSS]
     end
 
     subgraph ingest [Ingestion]
@@ -32,6 +48,7 @@ flowchart LR
 
     Wiki --> KC
     EONET --> KC
+    SLNews --> KC
     KC --> Kafka
     Kafka --> SR
     Kafka --> Flink
@@ -57,7 +74,7 @@ Java 21 · Kafka 3.7 (KRaft) · Flink 1.20 · Apache Iceberg 1.6 · Azure ADLS G
 
 - `connectors/wikimedia/` — SSE Kafka source connector
 - `connectors/slnews/` — Sri Lanka RSS Kafka source connector (Lanka Lens)
-- `flink-jobs/` — Five Flink stream processing jobs
+- `flink-jobs/` — Six Flink stream processing jobs
 - `iceberg/schemas/` — Iceberg table DDL
 - `dbt/` — Databricks analytics models
 - `k8s/` — AKS production manifests

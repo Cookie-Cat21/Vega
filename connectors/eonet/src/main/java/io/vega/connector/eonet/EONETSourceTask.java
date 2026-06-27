@@ -1,6 +1,7 @@
 package io.vega.connector.eonet;
 
 import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
@@ -86,6 +87,7 @@ public class EONETSourceTask extends SourceTask {
     private SourceRecord toSourceRecord(NaturalEvent event, Set<String> currentKeys) {
         String offsetValue = currentKeys.stream().collect(Collectors.joining(","));
         Map<String, String> sourceOffset = Collections.singletonMap("last_event_ids", offsetValue);
+        SchemaAndValue value = AvroConnect.toConnect(event);
 
         return new SourceRecord(
                 SOURCE_PARTITION,
@@ -93,8 +95,8 @@ public class EONETSourceTask extends SourceTask {
                 config.topic(),
                 Schema.STRING_SCHEMA,
                 event.getEventId(),
-                null,
-                event
+                value.schema(),
+                value.value()
         );
     }
 

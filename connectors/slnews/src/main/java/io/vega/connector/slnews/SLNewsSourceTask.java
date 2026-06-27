@@ -1,6 +1,7 @@
 package io.vega.connector.slnews;
 
 import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
@@ -86,6 +87,7 @@ public class SLNewsSourceTask extends SourceTask {
     private SourceRecord toSourceRecord(SLNewsArticle article, Set<String> currentIds) {
         String offsetValue = currentIds.stream().collect(Collectors.joining(","));
         Map<String, String> sourceOffset = Collections.singletonMap("last_article_ids", offsetValue);
+        SchemaAndValue value = AvroConnect.toConnect(article);
 
         return new SourceRecord(
                 SOURCE_PARTITION,
@@ -93,8 +95,8 @@ public class SLNewsSourceTask extends SourceTask {
                 config.topic(),
                 Schema.STRING_SCHEMA,
                 article.getArticleId(),
-                null,
-                article
+                value.schema(),
+                value.value()
         );
     }
 

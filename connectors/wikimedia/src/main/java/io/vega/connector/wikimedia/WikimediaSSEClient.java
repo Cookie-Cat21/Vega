@@ -88,7 +88,7 @@ public class WikimediaSSEClient {
                 .header("Accept", "text/event-stream")
                 .header("User-Agent", "VegaPipeline/1.0 (https://github.com/Cookie-Cat21/Vega)")
                 .GET()
-                .timeout(Duration.ZERO)
+                .timeout(Duration.ofHours(24))
                 .build();
 
         HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());

@@ -37,7 +37,7 @@ public final class AnomalyDetector {
                 .toList();
 
         if (inWindow.size() > RAPID_EDIT_THRESHOLD) {
-            RawWikiEvent latest = inWindow.getLast();
+            RawWikiEvent latest = inWindow.get(inWindow.size() - 1);
             return List.of(new EditAnomaly(
                     latest.title(),
                     user,

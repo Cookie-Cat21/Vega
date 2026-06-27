@@ -1,5 +1,6 @@
 package io.vega.connector.wikimedia;
 
+import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,10 +48,10 @@ class WikimediaSourceTaskTest {
         assertEquals(1, records.size());
         SourceRecord record = records.getFirst();
         assertEquals("raw-wiki-events", record.topic());
-        assertInstanceOf(WikiEvent.class, record.value());
-        WikiEvent value = (WikiEvent) record.value();
-        assertEquals("Article", value.getTitle());
-        assertEquals("enwiki", value.getWiki());
+        assertInstanceOf(Struct.class, record.value());
+        Struct value = (Struct) record.value();
+        assertEquals("Article", value.getString("title"));
+        assertEquals("enwiki", value.getString("wiki"));
     }
 
     @Test
@@ -80,12 +81,11 @@ class WikimediaSourceTaskTest {
     void recordValueMatchesAvroSchema() throws InterruptedException {
         queue.offer(sampleEvent("SchemaTest", 1_700_000_000_000L));
 
-        WikiEvent value = (WikiEvent) task.poll().getFirst().value();
+        Struct value = (Struct) task.poll().getFirst().value();
 
-        assertEquals(WikiEvent.getClassSchema(), value.getSchema());
-        assertEquals("SchemaTest", value.getTitle());
-        assertEquals("editor", value.getUser());
-        assertEquals(false, value.getBot());
+        assertEquals("SchemaTest", value.getString("title"));
+        assertEquals("editor", value.getString("user"));
+        assertEquals(false, value.getBoolean("bot"));
     }
 
     private static WikiEvent sampleEvent(String title, long timestamp) {
