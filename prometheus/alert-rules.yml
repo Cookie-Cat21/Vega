@@ -1,0 +1,38 @@
+groups:
+  - name: vega-pipeline
+    rules:
+      - alert: VegaKafkaConsumerLagHigh
+        expr: kafka_consumer_group_lag > 10000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka consumer lag exceeds 10,000"
+          description: "Consumer group {{ $labels.consumergroup }} has lag {{ $value }}"
+
+      - alert: VegaFlinkCheckpointFailure
+        expr: increase(flink_jobmanager_job_numberOfFailedCheckpoints[10m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Flink checkpoint failure detected"
+          description: "Job {{ $labels.job_name }} has failed checkpoints"
+
+      - alert: VegaNoEventsReceived
+        expr: rate(kafka_topic_partition_current_offset{topic=~"raw-.*"}[5m]) == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No events received in 5 minutes"
+          description: "Topic {{ $labels.topic }} has zero ingest rate"
+
+      - alert: VegaJvmHeapHigh
+        expr: jvm_memory_bytes_used{area="heap"} / jvm_memory_bytes_max{area="heap"} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "JVM heap usage above 90%"
+          description: "Instance {{ $labels.instance }} heap at {{ $value | humanizePercentage }}"

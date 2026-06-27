@@ -1,0 +1,111 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Wiki Events/sec",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+      "targets": [{"expr": "rate(kafka_topic_partition_current_offset{topic=\"raw-wiki-events\"}[1m])", "legendFormat": "wiki events/sec"}]
+    },
+    {
+      "title": "EONET Events/sec",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+      "targets": [{"expr": "rate(kafka_topic_partition_current_offset{topic=\"raw-natural-events\"}[1m])", "legendFormat": "eonet events/sec"}]
+    },
+    {
+      "title": "Kafka Consumer Lag",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+      "targets": [{"expr": "kafka_consumer_group_lag", "legendFormat": "{{consumergroup}}"}]
+    },
+    {
+      "title": "Flink Checkpoint Duration",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+      "targets": [{"expr": "flink_jobmanager_job_lastCheckpointDuration", "legendFormat": "{{job_name}}"}]
+    },
+    {
+      "title": "Edits per Wiki",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [{"expr": "sum by (wiki) (rate(vega_wiki_edits_total[5m]))", "legendFormat": "{{wiki}}"}]
+    },
+    {
+      "title": "Bot vs Human Ratio",
+      "type": "piechart",
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8},
+      "targets": [
+        {"expr": "sum(vega_wiki_edits_total{bot=\"true\"})", "legendFormat": "Bot"},
+        {"expr": "sum(vega_wiki_edits_total{bot=\"false\"})", "legendFormat": "Human"}
+      ]
+    },
+    {
+      "title": "Top Edited Articles",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 8},
+      "targets": [{"expr": "topk(10, sum by (title) (vega_wiki_edits_total))", "format": "table"}]
+    },
+    {
+      "title": "Active Events by Category",
+      "type": "barchart",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [{"expr": "sum by (category) (vega_natural_events_active)", "legendFormat": "{{category}}"}]
+    },
+    {
+      "title": "Natural Events (lat/lon)",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "targets": [{"expr": "vega_natural_events_coordinates", "format": "table"}]
+    },
+    {
+      "title": "Reaction Time Histogram",
+      "type": "histogram",
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 24},
+      "targets": [{"expr": "vega_event_reaction_time_seconds", "legendFormat": "reaction time"}]
+    },
+    {
+      "title": "Recent Correlations",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 24},
+      "targets": [{"expr": "vega_event_correlations", "format": "table"}]
+    },
+    {
+      "title": "Correlation Rate",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 24},
+      "targets": [{"expr": "rate(vega_event_correlations_total[5m])", "legendFormat": "correlations/sec"}]
+    },
+    {
+      "title": "Flink JVM Heap",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 32},
+      "targets": [{"expr": "jvm_memory_bytes_used{area=\"heap\"}", "legendFormat": "{{instance}}"}]
+    },
+    {
+      "title": "GC Pauses",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 32},
+      "targets": [{"expr": "rate(jvm_gc_collection_seconds_sum[5m])", "legendFormat": "{{gc}}"}]
+    },
+    {
+      "title": "Thread Count",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 32},
+      "targets": [{"expr": "jvm_threads_current", "legendFormat": "{{instance}}"}]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["vega"],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "title": "Vega Overview",
+  "uid": "vega-overview",
+  "version": 1
+}
