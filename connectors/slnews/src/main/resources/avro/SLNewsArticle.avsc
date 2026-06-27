@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "SLNewsArticle",
+  "namespace": "io.vega.connector.slnews",
+  "fields": [
+    {"name": "article_id", "type": "string"},
+    {"name": "title", "type": "string"},
+    {"name": "description", "type": ["null", "string"], "default": null},
+    {"name": "link", "type": "string"},
+    {"name": "source_feed", "type": "string"},
+    {"name": "source_name", "type": "string"},
+    {"name": "published_at", "type": "long", "logicalType": "timestamp-millis"},
+    {"name": "ingested_at", "type": "long", "logicalType": "timestamp-millis"},
+    {"name": "language", "type": "string"}
+  ]
+}

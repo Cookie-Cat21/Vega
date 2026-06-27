@@ -10,6 +10,7 @@ JOBS=(
   "io.vega.flink.jobs.AnomalyDetectionJob"
   "io.vega.flink.jobs.AggregationJob"
   "io.vega.flink.jobs.CorrelationJob"
+  "io.vega.flink.jobs.SLNewsEnrichmentJob"
 )
 
 for job in "${JOBS[@]}"; do
