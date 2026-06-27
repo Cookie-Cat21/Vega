@@ -1,0 +1,42 @@
+name: Build Flink Jobs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'flink-jobs/**'
+      - '.github/workflows/build-flink-jobs.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Test and package
+        working-directory: flink-jobs
+        run: |
+          mvn test
+          mvn package -DskipTests
+
+      - name: Log in to Azure Container Registry
+        if: github.ref == 'refs/heads/main'
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Docker image
+        if: github.ref == 'refs/heads/main'
+        working-directory: flink-jobs
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/vega-flink-jobs:${{ github.sha }} .
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/vega-flink-jobs:${{ github.sha }}
