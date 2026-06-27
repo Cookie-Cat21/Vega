@@ -76,6 +76,7 @@ services:
       CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components,/connectors
     volumes:
       - connect-plugins:/connectors
+      - ./connectors/wikimedia/target/vega-wikimedia-connector-1.0.0-SNAPSHOT.jar:/usr/share/java/vega-wikimedia-connector/vega-wikimedia-connector.jar:ro
     networks:
       - vega
 
