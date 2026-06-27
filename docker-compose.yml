@@ -78,6 +78,7 @@ services:
       - connect-plugins:/connectors
       - ./connectors/wikimedia/target/vega-wikimedia-connector-1.0.0-SNAPSHOT.jar:/usr/share/java/vega-wikimedia-connector/vega-wikimedia-connector.jar:ro
       - ./connectors/eonet/target/vega-eonet-connector-1.0.0-SNAPSHOT.jar:/usr/share/java/vega-eonet-connector/vega-eonet-connector.jar:ro
+      - ./connectors/slnews/target/vega-slnews-connector-1.0.0-SNAPSHOT.jar:/usr/share/java/vega-slnews-connector/vega-slnews-connector.jar:ro
     networks:
       - vega
 

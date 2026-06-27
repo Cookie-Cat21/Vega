@@ -51,12 +51,12 @@ Java 21 · Kafka 3.7 (KRaft) · Flink 1.20 · Apache Iceberg 1.6 · Azure ADLS G
 |---|---|---|
 | Wikimedia EventStreams | SSE (real-time) | Active |
 | NASA EONET | REST polling (60s) | Active |
-| Sri Lanka RSS Feeds | RSS polling (5m) | Blocked (Phase 11) |
+| Sri Lanka RSS Feeds (Lanka Lens) | RSS polling (5m) | Active |
 
 ## Project Structure
 
 - `connectors/wikimedia/` — SSE Kafka source connector
-- `connectors/eonet/` — REST Kafka source connector
+- `connectors/slnews/` — Sri Lanka RSS Kafka source connector (Lanka Lens)
 - `flink-jobs/` — Five Flink stream processing jobs
 - `iceberg/schemas/` — Iceberg table DDL
 - `dbt/` — Databricks analytics models
@@ -91,6 +91,15 @@ curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json
     "connector.class": "io.vega.connector.eonet.EONETSourceConnector",
     "tasks.max": "1",
     "topic": "raw-natural-events"
+  }
+}'
+
+curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
+  "name": "slnews-source",
+  "config": {
+    "connector.class": "io.vega.connector.slnews.SLNewsSourceConnector",
+    "tasks.max": "1",
+    "topic": "raw-sl-news"
   }
 }'
 

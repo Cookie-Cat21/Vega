@@ -2,6 +2,7 @@ package io.vega.flink.kafka;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.vega.flink.models.NaturalEvent;
+import io.vega.flink.models.RawSLNewsArticle;
 import io.vega.flink.models.RawWikiEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
@@ -24,6 +25,10 @@ public final class KafkaAvroMappers {
 
     public static KafkaRecordDeserializationSchema<NaturalEvent> naturalEventDeserializer(String schemaRegistryUrl) {
         return new NaturalEventKafkaDeserializer(schemaRegistryUrl);
+    }
+
+    public static KafkaRecordDeserializationSchema<RawSLNewsArticle> slNewsDeserializer(String schemaRegistryUrl) {
+        return new SLNewsKafkaDeserializer(schemaRegistryUrl);
     }
 
     private static Map<String, Object> avroConfig(String schemaRegistryUrl) {
@@ -122,6 +127,48 @@ public final class KafkaAvroMappers {
                 r.get("magnitude_unit") != null ? r.get("magnitude_unit").toString() : null,
                 Boolean.TRUE.equals(r.get("is_closed")),
                 ((Number) r.get("ingested_at")).longValue()
+        );
+    }
+
+    private static final class SLNewsKafkaDeserializer implements KafkaRecordDeserializationSchema<RawSLNewsArticle> {
+        private final String schemaRegistryUrl;
+        private transient KafkaAvroDeserializer deserializer;
+
+        SLNewsKafkaDeserializer(String schemaRegistryUrl) {
+            this.schemaRegistryUrl = schemaRegistryUrl;
+        }
+
+        @Override
+        public void open(DeserializationSchema.InitializationContext context) {
+            deserializer = new KafkaAvroDeserializer();
+            deserializer.configure(avroConfig(schemaRegistryUrl), false);
+        }
+
+        @Override
+        public void deserialize(ConsumerRecord<byte[], byte[]> record, Collector<RawSLNewsArticle> out) {
+            GenericRecord avro = (GenericRecord) deserializer.deserialize(record.topic(), record.value());
+            if (avro != null) {
+                out.collect(mapSLNewsArticle(avro));
+            }
+        }
+
+        @Override
+        public TypeInformation<RawSLNewsArticle> getProducedType() {
+            return TypeInformation.of(RawSLNewsArticle.class);
+        }
+    }
+
+    static RawSLNewsArticle mapSLNewsArticle(GenericRecord r) {
+        return new RawSLNewsArticle(
+                stringVal(r, "article_id"),
+                stringVal(r, "title"),
+                r.get("description") != null ? r.get("description").toString() : null,
+                stringVal(r, "link"),
+                stringVal(r, "source_feed"),
+                stringVal(r, "source_name"),
+                ((Number) r.get("published_at")).longValue(),
+                ((Number) r.get("ingested_at")).longValue(),
+                stringVal(r, "language")
         );
     }
 

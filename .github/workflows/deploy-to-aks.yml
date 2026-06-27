@@ -6,6 +6,7 @@ on:
     workflows:
       - Build Wikimedia Connector
       - Build EONET Connector
+      - Build SL News Connector
       - Build Flink Jobs
     types: [completed]
 

@@ -10,6 +10,7 @@ sources:
       - name: edit_anomalies
       - name: edit_aggregates
       - name: event_correlations
+      - name: sl_news_enriched
 
 models:
   - name: stg_wiki_events
@@ -25,4 +26,10 @@ models:
       - name: event_id
         tests: [not_null, unique]
       - name: category
+        tests: [not_null]
+  - name: stg_sl_news
+    columns:
+      - name: article_id
+        tests: [not_null, unique]
+      - name: title
         tests: [not_null]
