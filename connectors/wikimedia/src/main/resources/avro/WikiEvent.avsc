@@ -1,0 +1,21 @@
+{
+  "type": "record",
+  "name": "WikiEvent",
+  "namespace": "io.vega.connector.wikimedia",
+  "fields": [
+    {"name": "id", "type": ["null", "long"], "default": null},
+    {"name": "title", "type": "string"},
+    {"name": "user", "type": "string"},
+    {"name": "bot", "type": "boolean"},
+    {"name": "wiki", "type": "string"},
+    {"name": "server_url", "type": "string"},
+    {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"},
+    {"name": "type", "type": "string"},
+    {"name": "namespace", "type": "int"},
+    {"name": "comment", "type": ["null", "string"], "default": null},
+    {"name": "length_old", "type": ["null", "int"], "default": null},
+    {"name": "length_new", "type": ["null", "int"], "default": null},
+    {"name": "revision_old", "type": ["null", "long"], "default": null},
+    {"name": "revision_new", "type": ["null", "long"], "default": null}
+  ]
+}
