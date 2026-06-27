@@ -1,0 +1,42 @@
+services:
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    hostname: prometheus
+    container_name: vega-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    networks:
+      - vega
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    hostname: grafana
+    container_name: vega-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-vega}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - vega
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  vega:
+    name: vega-network
+    external: true

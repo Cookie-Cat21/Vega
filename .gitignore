@@ -1,0 +1,54 @@
+# Environment
+.env
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+dependency-reduced-pom.xml
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.project
+.classpath
+.settings/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/*.tfvars
+terraform/.terraform.lock.hcl
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# Flink
+/tmp/flink-*
+
+# Grafana
+grafana/data/
+
+# Prometheus
+prometheus/data/
