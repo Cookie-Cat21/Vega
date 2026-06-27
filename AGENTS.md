@@ -36,6 +36,12 @@ existing functionality). Standard commands live in the `Makefile` and `README.md
 - The Kafka `CLUSTER_ID` must be a base64-encoded 16-byte UUID (22 chars). An invalid
   value makes Kafka exit immediately during format with "not equal to the expected 16
   bytes".
+- `vega-kafka-connect` reports Docker health `unhealthy`, but it is functional. The
+  Confluent image's `healthcheck.sh` curls `$CONNECT_REST_ADVERTISED_HOST_NAME:$CONNECT_REST_PORT`,
+  and the compose sets the host name but not `CONNECT_REST_PORT`, so the URL has an
+  empty port and returns `000`. The REST API on `:8083` works fine
+  (`curl http://localhost:8083/connectors` → `200`). Nothing depends on Connect being
+  `service_healthy`, so this does not block startup.
 
 ### Smoke test (core functionality = Kafka messaging)
 ```bash
