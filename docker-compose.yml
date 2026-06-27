@@ -118,6 +118,7 @@ services:
     volumes:
       - flink-checkpoints:/tmp/flink-checkpoints
       - flink-savepoints:/tmp/flink-savepoints
+      - ./flink-jobs/target/vega-flink-jobs-1.0.0-SNAPSHOT.jar:/opt/flink/usrlib/vega-flink-jobs.jar:ro
     networks:
       - vega
 
@@ -138,6 +139,7 @@ services:
     volumes:
       - flink-checkpoints:/tmp/flink-checkpoints
       - flink-savepoints:/tmp/flink-savepoints
+      - ./flink-jobs/target/vega-flink-jobs-1.0.0-SNAPSHOT.jar:/opt/flink/usrlib/vega-flink-jobs.jar:ro
     networks:
       - vega
 
