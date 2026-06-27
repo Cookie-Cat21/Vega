@@ -1,0 +1,17 @@
+name: vega
+version: 1.0.0
+config-version: 2
+profile: vega
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+
+models:
+  vega:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

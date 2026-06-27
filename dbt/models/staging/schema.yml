@@ -1,0 +1,28 @@
+version: 2
+
+sources:
+  - name: vega
+    database: vega
+    schema: default
+    tables:
+      - name: wiki_events_enriched
+      - name: natural_events
+      - name: edit_anomalies
+      - name: edit_aggregates
+      - name: event_correlations
+
+models:
+  - name: stg_wiki_events
+    columns:
+      - name: title
+        tests: [not_null]
+      - name: wiki
+        tests: [not_null]
+      - name: event_timestamp
+        tests: [not_null]
+  - name: stg_natural_events
+    columns:
+      - name: event_id
+        tests: [not_null, unique]
+      - name: category
+        tests: [not_null]

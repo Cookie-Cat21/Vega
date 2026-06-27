@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: edit_velocity_by_wiki
+    columns:
+      - name: wiki
+        tests: [not_null]
+  - name: top_edited_articles
+    columns:
+      - name: title
+        tests: [not_null]
+  - name: bot_vs_human_ratio
+    columns:
+      - name: wiki
+        tests: [not_null]
+  - name: natural_events_by_type
+    columns:
+      - name: category
+        tests: [not_null]
+  - name: event_reaction_time
+    columns:
+      - name: natural_event_id
+        tests: [not_null, unique]
