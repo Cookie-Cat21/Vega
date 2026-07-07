@@ -3,6 +3,8 @@ kind: NetworkPolicy
 metadata:
   name: default-deny-ingress
   namespace: vega
+  annotations:
+    description: "Default deny all ingress traffic to vega namespace pods"
 spec:
   podSelector: {}
   policyTypes:
