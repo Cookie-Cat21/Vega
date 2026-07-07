@@ -1,5 +1,7 @@
 # Vega — Real-Time Streaming Lakehouse Pipeline
 
+[![Test All](https://github.com/Cookie-Cat21/Vega/actions/workflows/test-all.yml/badge.svg)](https://github.com/Cookie-Cat21/Vega/actions/workflows/test-all.yml)
+
 Vega tracks global natural events and real-time human reactions to them. A wildfire starts (NASA EONET) → Wikipedia edits spike → Vega captures the correlation live.
 
 ## Architecture
