@@ -39,6 +39,12 @@ jobs:
             sed -i "s|:1\.0\.0|:${IMAGE_TAG}|g" "$manifest"
           done
 
+      - name: Install Strimzi operator
+        run: |
+          helm repo add strimzi https://strimzi.io/charts/
+          helm upgrade --install strimzi strimzi/strimzi-kafka-operator \
+            -n vega --create-namespace -f helm/strimzi-values.yaml || true
+
       - name: Deploy Kubernetes manifests
         run: |
           kubectl apply -f k8s/namespace.yaml
