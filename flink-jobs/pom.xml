@@ -17,7 +17,7 @@
         <flink.version>1.20.0</flink.version>
         <kafka.version>3.7.0</kafka.version>
         <confluent.version>7.6.0</confluent.version>
-        <iceberg.version>1.6.0</iceberg.version>
+        <iceberg.version>1.7.2</iceberg.version>
         <avro.version>1.11.3</avro.version>
         <junit.version>5.10.2</junit.version>
         <mockito.version>5.11.0</mockito.version>
@@ -64,6 +64,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-common</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
             <artifactId>flink-metrics-prometheus</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
@@ -82,6 +87,22 @@
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
             <version>${confluent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-flink-runtime-1.20</artifactId>
+            <version>${iceberg.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-azure</artifactId>
+            <version>${iceberg.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>3.3.6</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
