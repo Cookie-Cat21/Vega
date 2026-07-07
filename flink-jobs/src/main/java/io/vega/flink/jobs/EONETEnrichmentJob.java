@@ -4,7 +4,7 @@ import io.vega.flink.FlinkEnvFactory;
 import io.vega.flink.kafka.KafkaAvroMappers;
 import io.vega.flink.models.EnrichedNaturalEvent;
 import io.vega.flink.models.NaturalEvent;
-import io.vega.flink.operators.GeoEnricher;
+import io.vega.flink.metrics.NaturalEventMetricsMapper;
 import io.vega.flink.sinks.IcebergSinkFactory;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.connector.kafka.source.KafkaSource;
@@ -28,7 +28,7 @@ public class EONETEnrichmentJob {
         DataStream<EnrichedNaturalEvent> enriched = env
                 .fromSource(source, WatermarkStrategy.<NaturalEvent>forMonotonousTimestamps()
                         .withTimestampAssigner((event, ts) -> event.eventDate()), "eonet-kafka-source")
-                .map(GeoEnricher::enrich)
+                .map(new NaturalEventMetricsMapper())
                 .name("geo-enricher");
 
         IcebergSinkFactory.writeToIceberg(enriched, "vega", "natural_events", EnrichedNaturalEvent.class);
