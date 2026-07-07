@@ -9,6 +9,9 @@ make -C "${ROOT}" build
 echo "=== Starting local stack ==="
 make -C "${ROOT}" up
 
+echo "=== Waiting for Kafka ==="
+"${ROOT}/scripts/wait-for-kafka.sh"
+
 echo "=== Registering Kafka Connect sources ==="
 "${ROOT}/scripts/register-connectors.sh"
 
