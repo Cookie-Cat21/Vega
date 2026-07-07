@@ -1,0 +1,8 @@
+groups:
+  - name: vega
+    rules:
+      - record: vega:wiki_events_per_sec
+        expr: sum(rate(kafka_topic_partition_current_offset{topic="raw-wiki-events"}[1m]))
+
+      - record: vega:eonet_events_per_sec
+        expr: sum(rate(kafka_topic_partition_current_offset{topic="raw-natural-events"}[1m]))
