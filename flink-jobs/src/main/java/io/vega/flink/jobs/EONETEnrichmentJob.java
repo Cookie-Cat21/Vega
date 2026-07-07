@@ -16,6 +16,7 @@ public class EONETEnrichmentJob {
 
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = FlinkEnvFactory.create();
+        env.setParallelism(FlinkEnvFactory.parallelism());
 
         KafkaSource<NaturalEvent> source = KafkaSource.<NaturalEvent>builder()
                 .setBootstrapServers(FlinkEnvFactory.kafkaBootstrapServers())
