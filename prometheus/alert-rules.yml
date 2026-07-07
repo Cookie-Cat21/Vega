@@ -36,3 +36,30 @@ groups:
         annotations:
           summary: "JVM heap usage above 90%"
           description: "Instance {{ $labels.instance }} heap at {{ $value | humanizePercentage }}"
+
+      - alert: VegaSLNewsIngestStalled
+        expr: rate(kafka_topic_partition_current_offset{topic="raw-sl-news"}[5m]) == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SL News ingest stalled"
+          description: "Topic raw-sl-news has zero ingest rate for 10 minutes"
+
+      - alert: VegaFlinkJobDown
+        expr: flink_jobmanager_numRunningJobs == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No Flink jobs running"
+          description: "Flink JobManager reports zero running jobs"
+
+      - alert: VegaSchemaRegistryDown
+        expr: up{job="schema-registry"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Schema Registry is down"
+          description: "Schema Registry target {{ $labels.instance }} is unreachable"
