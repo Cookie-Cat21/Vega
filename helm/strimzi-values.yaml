@@ -1,3 +1,4 @@
+# Strimzi operator — watches the vega namespace for Kafka CRs
 watchNamespaces:
   - vega
 replicas: 1
