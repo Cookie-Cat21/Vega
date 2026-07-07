@@ -1,0 +1,13 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: eonet-source
+  namespace: vega
+  labels:
+    strimzi.io/cluster: vega-kafka-connect
+spec:
+  class: io.vega.connector.eonet.EONETSourceConnector
+  tasksMax: 1
+  config:
+    topic: raw-natural-events
+  state: running
