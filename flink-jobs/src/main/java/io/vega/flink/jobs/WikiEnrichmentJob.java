@@ -4,7 +4,7 @@ import io.vega.flink.FlinkEnvFactory;
 import io.vega.flink.kafka.KafkaAvroMappers;
 import io.vega.flink.models.EnrichedWikiEvent;
 import io.vega.flink.models.RawWikiEvent;
-import io.vega.flink.operators.EditEnricher;
+import io.vega.flink.metrics.WikiEditMetricsMapper;
 import io.vega.flink.sinks.IcebergSinkFactory;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.connector.kafka.source.KafkaSource;
@@ -16,6 +16,7 @@ public class WikiEnrichmentJob {
 
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = FlinkEnvFactory.create();
+        env.setParallelism(FlinkEnvFactory.parallelism());
 
         KafkaSource<RawWikiEvent> source = KafkaSource.<RawWikiEvent>builder()
                 .setBootstrapServers(FlinkEnvFactory.kafkaBootstrapServers())
@@ -29,7 +30,7 @@ public class WikiEnrichmentJob {
                 .fromSource(source, WatermarkStrategy.<RawWikiEvent>forMonotonousTimestamps()
                         .withTimestampAssigner((event, ts) -> event.timestamp()), "wiki-kafka-source")
                 .filter(e -> "edit".equals(e.type()))
-                .map(EditEnricher::enrich)
+                .map(new WikiEditMetricsMapper())
                 .name("edit-enricher");
 
         IcebergSinkFactory.writeToIceberg(enriched, "vega", "wiki_events_enriched", EnrichedWikiEvent.class);

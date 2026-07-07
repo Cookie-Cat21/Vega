@@ -1,3 +1,4 @@
+# Flink Kubernetes Operator — manages FlinkDeployment CRs in vega namespace
 watchNamespaces:
   - vega
 jobServiceAccount:

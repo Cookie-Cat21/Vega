@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vega-grafana-dashboards
+  namespace: vega
+  labels:
+    grafana_dashboard: "1"
+data:
+  vega-overview.json: |
+    # Dashboard provisioned from dashboards/grafana/vega-overview.json at deploy time

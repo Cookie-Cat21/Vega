@@ -1,0 +1,4 @@
+* text=auto eol=lf
+*.sh text eol=lf
+*.java text diff=java
+*.xml text diff=xml

@@ -5,5 +5,6 @@ COPY src ./src
 RUN mvn clean package -DskipTests -q
 
 FROM confluentinc/cp-kafka-connect:7.6.0
+LABEL org.opencontainers.image.title="vega-slnews-connector"
 COPY --from=build /build/target/vega-slnews-connector-1.0.0-SNAPSHOT.jar \
     /usr/share/java/vega-slnews-connector/vega-slnews-connector.jar

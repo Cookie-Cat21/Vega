@@ -1,0 +1,35 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: vega-kafka-connect
+  namespace: vega
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+spec:
+  version: 3.7.0
+  replicas: 3
+  image: ${ACR_LOGIN_SERVER}/vega-kafka-connect:1.0.0
+  bootstrapServers: vega-kafka-kafka-bootstrap:9092
+  config:
+    group.id: vega-connect-cluster
+    offset.storage.topic: _connect-offsets
+    config.storage.topic: _connect-configs
+    status.storage.topic: _connect-status
+    offset.storage.replication.factor: 3
+    config.storage.replication.factor: 3
+    status.storage.replication.factor: 3
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: io.confluent.connect.avro.AvroConverter
+    value.converter.schema.registry.url: http://schema-registry:8081
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 500m
+    limits:
+      memory: 2Gi
+      cpu: 1000m
+  template:
+    pod:
+      metadata:
+        labels:
+          app: vega-kafka-connect
