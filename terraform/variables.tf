@@ -34,16 +34,6 @@ variable "aks_vm_size" {
   default     = "Standard_D4s_v5"
 }
 
-variable "acr_name" {
-  description = "Azure Container Registry name (globally unique)"
-  type        = string
-}
-
-variable "adls_account_name" {
-  description = "ADLS Gen2 storage account name for Iceberg"
-  type        = string
-}
-
 variable "blob_account_name" {
   description = "Blob storage account name for Flink checkpoints"
   type        = string
