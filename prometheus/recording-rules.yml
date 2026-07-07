@@ -6,3 +6,6 @@ groups:
 
       - record: vega:eonet_events_per_sec
         expr: sum(rate(kafka_topic_partition_current_offset{topic="raw-natural-events"}[1m]))
+
+      - record: vega:sl_news_per_sec
+        expr: sum(rate(kafka_topic_partition_current_offset{topic="raw-sl-news"}[1m]))
