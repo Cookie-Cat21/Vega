@@ -88,6 +88,16 @@ Five improvement loops hardened the codebase across:
 - Reverse geocoding in EONETEnrichmentJob uses a static lookup table, not a live API
 - dbt compile in CI uses placeholder Databricks credentials
 
+## Improvement Loops (Commits 13–200)
+
+Five post-phase improvement loops delivered:
+
+- **Loop 1:** Unit test coverage, Flink metrics, DLQ publishers, Docker/Makefile DX
+- **Loop 2:** K8s Kafka Connect, NetworkPolicy, Terraform Key Vault + Databricks
+- **Loop 3:** dbt tests, Grafana panels, scripts, runbook, CI workflows
+- **Loop 4:** Integration test stubs, logback configs, HPA, probes
+- **Loop 5:** Documentation, OCI labels, parallelism tuning, final validation
+
 ## Contributors
 
 Vega — Cookie-Cat21
