@@ -4,7 +4,9 @@ import org.apache.flink.api.common.serialization.SimpleStringEncoder;
 import org.apache.flink.connector.file.sink.FileSink;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
+import org.apache.flink.table.data.RowData;
+import org.apache.iceberg.flink.TableLoader;
+import org.apache.iceberg.flink.sink.FlinkSink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,15 +24,11 @@ public final class IcebergSinkFactory {
             String table,
             Class<T> recordClass
     ) {
-        String warehouse = System.getenv().getOrDefault("ICEBERG_WAREHOUSE_PATH", "/tmp/iceberg/warehouse");
         boolean icebergEnabled = "true".equalsIgnoreCase(
                 System.getenv().getOrDefault("VEGA_ICEBERG_ENABLED", "false"));
-        String catalogName = System.getenv().getOrDefault("ICEBERG_CATALOG_NAME", "vega_catalog");
 
         if (icebergEnabled) {
-            LOG.info("Iceberg sink enabled: catalog={}, warehouse={}, table={}.{}",
-                    catalogName, warehouse, database, table);
-            writeToIcebergTable(stream, database, table, warehouse);
+            writeToIcebergTable(stream, database, table, recordClass);
         } else {
             LOG.debug("Iceberg disabled, writing to local file sink for table {}", table);
             writeToFile(stream, table);
@@ -41,24 +39,33 @@ public final class IcebergSinkFactory {
             DataStream<T> stream,
             String database,
             String table,
-            String warehouse
+            Class<T> recordClass
     ) {
-        stream.map(Object::toString)
-                .sinkTo(FileSink
-                        .forRowFormat(
-                                new Path(warehouse + "/" + database + "/" + table),
-                                new SimpleStringEncoder<String>("UTF-8"))
-                        .withRollingPolicy(DefaultRollingPolicy.builder()
-                                .withRolloverInterval(Duration.ofMinutes(5))
-                                .build())
-                        .build())
-                .name("iceberg-sink-" + table);
+        String catalogName = System.getenv().getOrDefault("ICEBERG_CATALOG_NAME", "vega_catalog");
+        String warehouse = System.getenv().getOrDefault("ICEBERG_WAREHOUSE_PATH", "/tmp/iceberg/warehouse");
+
+        LOG.info("Iceberg sink enabled: catalog={}, warehouse={}, table={}.{}",
+                catalogName, warehouse, database, table);
+
+        IcebergTableEnsurer.ensureTable(database, table);
+
+        TableLoader tableLoader = IcebergCatalogFactory.tableLoader(database, table);
+
+        DataStream<RowData> rows = stream
+                .map(IcebergRowConverters.converterFor(recordClass))
+                .name("iceberg-row-mapper-" + table);
+
+        FlinkSink.forRowData(rows)
+                .tableLoader(tableLoader)
+                .uidPrefix("iceberg-sink-" + table)
+                .append();
     }
 
     static <T> void writeToFile(DataStream<T> stream, String table) {
         FileSink<T> sink = FileSink
                 .forRowFormat(new Path("/tmp/vega-output/" + table), new SimpleStringEncoder<T>("UTF-8"))
-                .withRollingPolicy(DefaultRollingPolicy.builder()
+                .withRollingPolicy(org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies
+                        .DefaultRollingPolicy.builder()
                         .withRolloverInterval(Duration.ofMinutes(5))
                         .build())
                 .build();
