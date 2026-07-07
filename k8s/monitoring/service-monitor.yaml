@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flink-metrics
+  namespace: vega
+  labels:
+    app.kubernetes.io/part-of: vega-pipeline
+spec:
+  selector:
+    matchLabels:
+      type: flink-native-kubernetes
+  endpoints:
+    - targetPort: 9249
+      path: /
+      interval: 15s

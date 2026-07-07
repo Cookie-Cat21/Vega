@@ -1,0 +1,38 @@
+name: dbt Compile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dbt/**'
+      - '.github/workflows/dbt-compile.yml'
+  pull_request:
+    paths:
+      - 'dbt/**'
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dbt
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dbt-databricks
+        run: pip install "dbt-databricks>=1.8,<2"
+
+      - name: dbt deps
+        run: dbt deps || true
+
+      - name: dbt compile
+        run: dbt compile --no-version-check
+        env:
+          DBT_DATABRICKS_HOST: https://placeholder.cloud.databricks.com
+          DBT_DATABRICKS_HTTP_PATH: /sql/1.0/warehouses/placeholder
+          DBT_DATABRICKS_TOKEN: placeholder

@@ -17,3 +17,11 @@ output "adls_endpoint" {
 output "blob_endpoint" {
   value = azurerm_storage_account.blob.primary_blob_endpoint
 }
+
+output "key_vault_uri" {
+  value = azurerm_key_vault.vega.vault_uri
+}
+
+output "databricks_workspace_url" {
+  value = azurerm_databricks_workspace.vega.workspace_url
+}

@@ -42,4 +42,8 @@ public final class FlinkEnvFactory {
     public static String icebergCatalogName() {
         return System.getenv().getOrDefault("ICEBERG_CATALOG_NAME", "vega_catalog");
     }
+
+    public static int parallelism() {
+        return Integer.parseInt(System.getenv().getOrDefault("VEGA_FLINK_PARALLELISM", "2"));
+    }
 }
