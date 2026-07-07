@@ -15,6 +15,22 @@ spec:
     resource:
       memory: "2048m"
       cpu: 1
+    podTemplate:
+      spec:
+        containers:
+          - name: flink-main-container
+            livenessProbe:
+              httpGet:
+                path: /
+                port: 8081
+              initialDelaySeconds: 30
+              periodSeconds: 10
+            readinessProbe:
+              httpGet:
+                path: /
+                port: 8081
+              initialDelaySeconds: 30
+              periodSeconds: 10
   taskManager:
     resource:
       memory: "4096m"
