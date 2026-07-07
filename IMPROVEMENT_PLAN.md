@@ -90,6 +90,13 @@ dbt compile
 
 ## Progress Tracker
 
-| Commit # | SHA | Description | Loop |
-|----------|-----|-------------|------|
-| (updated as commits land) | | | |
+| Milestone | Commits | Status |
+|-----------|---------|--------|
+| Phases 1–11 | 1–12 | Complete |
+| Improvement Loop 1 | 13–50 | Complete |
+| Improvement Loop 2 | 51–90 | Complete |
+| Improvement Loop 3 | 91–130 | Complete |
+| Improvement Loop 4 | 131–165 | Complete |
+| Improvement Loop 5 | 166–200 | Complete |
+
+**Total: 200 commits — roadmap complete.**
