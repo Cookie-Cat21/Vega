@@ -9,6 +9,7 @@ flowchart LR
     subgraph sources [Data Sources]
         Wiki[Wikimedia SSE]
         EONET[NASA EONET REST]
+        SLNews[Sri Lanka RSS]
     end
 
     subgraph ingest [Ingestion]
@@ -32,6 +33,7 @@ flowchart LR
 
     Wiki --> KC
     EONET --> KC
+    SLNews --> KC
     KC --> Kafka
     Kafka --> SR
     Kafka --> Flink
@@ -57,7 +59,7 @@ Java 21 · Kafka 3.7 (KRaft) · Flink 1.20 · Apache Iceberg 1.6 · Azure ADLS G
 
 - `connectors/wikimedia/` — SSE Kafka source connector
 - `connectors/slnews/` — Sri Lanka RSS Kafka source connector (Lanka Lens)
-- `flink-jobs/` — Five Flink stream processing jobs
+- `flink-jobs/` — Six Flink stream processing jobs
 - `iceberg/schemas/` — Iceberg table DDL
 - `dbt/` — Databricks analytics models
 - `k8s/` — AKS production manifests
