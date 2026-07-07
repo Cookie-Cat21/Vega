@@ -63,3 +63,21 @@ groups:
         annotations:
           summary: "Schema Registry is down"
           description: "Schema Registry target {{ $labels.instance }} is unreachable"
+
+      - alert: VegaWikiIngestStalled
+        expr: rate(kafka_topic_partition_current_offset{topic="raw-wiki-events"}[5m]) == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Wikipedia ingest stalled"
+          description: "Topic raw-wiki-events has zero ingest rate for 10 minutes"
+
+      - alert: VegaEonetIngestStalled
+        expr: rate(kafka_topic_partition_current_offset{topic="raw-natural-events"}[5m]) == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "EONET ingest stalled"
+          description: "Topic raw-natural-events has zero ingest rate for 10 minutes"
