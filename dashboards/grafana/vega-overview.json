@@ -10,7 +10,7 @@
       "title": "Wiki Events/sec",
       "type": "timeseries",
       "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
-      "targets": [{"expr": "rate(kafka_topic_partition_current_offset{topic=\"raw-wiki-events\"}[1m])", "legendFormat": "wiki events/sec"}]
+      "targets": [{"expr": "vega:wiki_events_per_sec", "legendFormat": "wiki events/sec"}]
     },
     {
       "title": "EONET Events/sec",
