@@ -1,4 +1,16 @@
-.PHONY: up down logs monitoring monitoring-down status clean
+.PHONY: up down logs monitoring monitoring-down status clean build test
+
+build:
+	cd connectors/wikimedia && mvn package -DskipTests -q
+	cd connectors/eonet && mvn package -DskipTests -q
+	cd connectors/slnews && mvn package -DskipTests -q
+	cd flink-jobs && mvn package -DskipTests -q
+
+test:
+	cd connectors/wikimedia && mvn test -q
+	cd connectors/eonet && mvn test -q
+	cd connectors/slnews && mvn test -q
+	cd flink-jobs && mvn test -q
 
 up:
 	docker compose up -d
