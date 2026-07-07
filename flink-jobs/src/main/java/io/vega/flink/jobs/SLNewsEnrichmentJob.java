@@ -16,6 +16,7 @@ public class SLNewsEnrichmentJob {
 
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = FlinkEnvFactory.create();
+        env.setParallelism(FlinkEnvFactory.parallelism());
 
         KafkaSource<RawSLNewsArticle> source = KafkaSource.<RawSLNewsArticle>builder()
                 .setBootstrapServers(FlinkEnvFactory.kafkaBootstrapServers())
