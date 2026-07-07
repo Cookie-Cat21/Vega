@@ -3,6 +3,8 @@ version: 1.0.0
 config-version: 2
 profile: vega
 
+# Vega analytics: staging views and mart tables on Databricks/Iceberg
+
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
