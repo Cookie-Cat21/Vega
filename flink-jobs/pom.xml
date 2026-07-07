@@ -15,7 +15,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <flink.version>1.20.0</flink.version>
-        <kafka.version>3.7.0</kafka.version>
+        <kafka.version>4.3.1</kafka.version>
         <confluent.version>7.6.0</confluent.version>
         <iceberg.version>1.7.2</iceberg.version>
         <avro.version>1.11.3</avro.version>
