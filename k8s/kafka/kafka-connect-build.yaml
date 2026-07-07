@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-connect-build
+  namespace: vega
+data:
+  Dockerfile: |
+    # Custom Vega Kafka Connect image with all source connectors.
+    # Build context: repository root (connectors/ directory must be present).
+    #
+    # Example:
+    #   docker build -f <(kubectl get configmap kafka-connect-build -n vega -o jsonpath='{.data.Dockerfile}') \
+    #     -t ${ACR_LOGIN_SERVER}/vega-kafka-connect:1.0.0 .
+
+    FROM maven:3.9-eclipse-temurin-21 AS wikimedia-build
+    WORKDIR /build
+    COPY connectors/wikimedia/pom.xml .
+    COPY connectors/wikimedia/src ./src
+    RUN mvn clean package -DskipTests -q
+
+    FROM maven:3.9-eclipse-temurin-21 AS eonet-build
+    WORKDIR /build
+    COPY connectors/eonet/pom.xml .
+    COPY connectors/eonet/src ./src
+    RUN mvn clean package -DskipTests -q
+
+    FROM maven:3.9-eclipse-temurin-21 AS slnews-build
+    WORKDIR /build
+    COPY connectors/slnews/pom.xml .
+    COPY connectors/slnews/src ./src
+    RUN mvn clean package -DskipTests -q
+
+    FROM confluentinc/cp-kafka-connect:7.6.0
+    COPY --from=wikimedia-build /build/target/vega-wikimedia-connector-1.0.0-SNAPSHOT.jar \
+        /usr/share/java/vega-wikimedia-connector/vega-wikimedia-connector.jar
+    COPY --from=eonet-build /build/target/vega-eonet-connector-1.0.0-SNAPSHOT.jar \
+        /usr/share/java/vega-eonet-connector/vega-eonet-connector.jar
+    COPY --from=slnews-build /build/target/vega-slnews-connector-1.0.0-SNAPSHOT.jar \
+        /usr/share/java/vega-slnews-connector/vega-slnews-connector.jar
