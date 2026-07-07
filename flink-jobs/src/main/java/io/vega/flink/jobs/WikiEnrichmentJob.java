@@ -16,6 +16,7 @@ public class WikiEnrichmentJob {
 
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = FlinkEnvFactory.create();
+        env.setParallelism(FlinkEnvFactory.parallelism());
 
         KafkaSource<RawWikiEvent> source = KafkaSource.<RawWikiEvent>builder()
                 .setBootstrapServers(FlinkEnvFactory.kafkaBootstrapServers())
