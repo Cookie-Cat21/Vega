@@ -5,3 +5,4 @@ metadata:
   labels:
     app.kubernetes.io/name: vega
     app.kubernetes.io/part-of: vega-pipeline
+    vega.io/environment: production
