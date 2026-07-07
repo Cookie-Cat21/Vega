@@ -1,4 +1,4 @@
-.PHONY: up down logs monitoring monitoring-down status clean build test
+.PHONY: up down logs monitoring monitoring-down status clean build test validate bootstrap teardown
 
 build:
 	cd connectors/wikimedia && mvn package -DskipTests -q
@@ -45,3 +45,14 @@ status:
 clean:
 	docker compose down -v
 	docker compose -f docker-compose.monitoring.yml down -v 2>/dev/null || true
+
+validate:
+	docker compose config
+	docker compose -f docker-compose.monitoring.yml config
+	cd terraform && terraform init -backend=false && terraform validate
+
+bootstrap:
+	./scripts/bootstrap-local.sh
+
+teardown:
+	./scripts/teardown-local.sh
