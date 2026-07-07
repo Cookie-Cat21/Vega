@@ -19,6 +19,12 @@
       "targets": [{"expr": "rate(kafka_topic_partition_current_offset{topic=\"raw-natural-events\"}[1m])", "legendFormat": "eonet events/sec"}]
     },
     {
+      "title": "SL News Events/sec",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 40},
+      "targets": [{"expr": "rate(kafka_topic_partition_current_offset{topic=\"raw-sl-news\"}[1m])", "legendFormat": "sl news events/sec"}]
+    },
+    {
       "title": "Kafka Consumer Lag",
       "type": "timeseries",
       "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
