@@ -5,6 +5,7 @@ import io.vega.flink.kafka.KafkaAvroMappers;
 import io.vega.flink.models.EventCorrelation;
 import io.vega.flink.models.NaturalEvent;
 import io.vega.flink.models.RawWikiEvent;
+import io.vega.flink.metrics.CorrelationMetricsSink;
 import io.vega.flink.operators.CorrelationMatcher;
 import io.vega.flink.sinks.IcebergSinkFactory;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -23,6 +24,7 @@ public class CorrelationJob {
 
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = FlinkEnvFactory.create();
+        env.setParallelism(FlinkEnvFactory.parallelism());
 
         KafkaSource<NaturalEvent> naturalSource = KafkaSource.<NaturalEvent>builder()
                 .setBootstrapServers(FlinkEnvFactory.kafkaBootstrapServers())
@@ -56,6 +58,8 @@ public class CorrelationJob {
                 .name("event-correlator");
 
         IcebergSinkFactory.writeToIceberg(correlations, "vega", "event_correlations", EventCorrelation.class);
+
+        correlations.addSink(new CorrelationMetricsSink()).name("correlation-metrics");
 
         env.execute("CorrelationJob");
     }
