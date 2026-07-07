@@ -103,11 +103,12 @@ services:
       - vega
 
   flink-jobmanager:
-    image: flink:1.20-java17
+    image: flink:1.20-java21
     hostname: flink-jobmanager
     container_name: vega-flink-jobmanager
     ports:
       - "8081:8081"
+      - "9249:9249"
     command: jobmanager
     environment:
       FLINK_PROPERTIES: |
@@ -116,6 +117,8 @@ services:
         state.checkpoints.dir: file:///tmp/flink-checkpoints
         state.savepoints.dir: file:///tmp/flink-savepoints
         execution.checkpointing.interval: 60000
+        metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
+        metrics.reporter.prom.port: 9249
     volumes:
       - flink-checkpoints:/tmp/flink-checkpoints
       - flink-savepoints:/tmp/flink-savepoints
@@ -124,11 +127,13 @@ services:
       - vega
 
   flink-taskmanager:
-    image: flink:1.20-java17
+    image: flink:1.20-java21
     hostname: flink-taskmanager
     container_name: vega-flink-taskmanager
     depends_on:
       - flink-jobmanager
+    ports:
+      - "9250:9249"
     command: taskmanager
     environment:
       FLINK_PROPERTIES: |
@@ -137,6 +142,8 @@ services:
         state.backend: hashmap
         state.checkpoints.dir: file:///tmp/flink-checkpoints
         state.savepoints.dir: file:///tmp/flink-savepoints
+        metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
+        metrics.reporter.prom.port: 9249
     volumes:
       - flink-checkpoints:/tmp/flink-checkpoints
       - flink-savepoints:/tmp/flink-savepoints
