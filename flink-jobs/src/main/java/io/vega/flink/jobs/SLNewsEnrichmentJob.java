@@ -4,7 +4,7 @@ import io.vega.flink.FlinkEnvFactory;
 import io.vega.flink.kafka.KafkaAvroMappers;
 import io.vega.flink.models.EnrichedSLNewsArticle;
 import io.vega.flink.models.RawSLNewsArticle;
-import io.vega.flink.operators.NewsEnricher;
+import io.vega.flink.metrics.SLNewsMetricsMapper;
 import io.vega.flink.sinks.IcebergSinkFactory;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.connector.kafka.source.KafkaSource;
@@ -28,7 +28,7 @@ public class SLNewsEnrichmentJob {
         DataStream<EnrichedSLNewsArticle> enriched = env
                 .fromSource(source, WatermarkStrategy.<RawSLNewsArticle>forMonotonousTimestamps()
                         .withTimestampAssigner((event, ts) -> event.publishedAt()), "slnews-kafka-source")
-                .map(NewsEnricher::enrich)
+                .map(new SLNewsMetricsMapper())
                 .name("news-enricher");
 
         IcebergSinkFactory.writeToIceberg(enriched, "vega", "sl_news_enriched", EnrichedSLNewsArticle.class);
