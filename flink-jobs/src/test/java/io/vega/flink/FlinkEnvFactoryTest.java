@@ -16,6 +16,14 @@ class FlinkEnvFactoryTest {
     }
 
     @Test
+    void createUsesExactlyOnceCheckpointing() {
+        StreamExecutionEnvironment env = FlinkEnvFactory.create();
+        assertEquals(
+                org.apache.flink.streaming.api.CheckpointingMode.EXACTLY_ONCE,
+                env.getCheckpointConfig().getCheckpointingMode());
+    }
+
+    @Test
     void kafkaBootstrapServersDefaultsToLocalhost() {
         assertEquals("localhost:9092", FlinkEnvFactory.kafkaBootstrapServers());
     }
