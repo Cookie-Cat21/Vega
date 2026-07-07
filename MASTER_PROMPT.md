@@ -60,8 +60,8 @@ Vega tracks global natural events and real-time human reactions to them.
 - Each event fields: `id`, `title`, `category` (array), `geometry` (coordinates + date), `sources`, `closed` (null if ongoing)
 - **Connector type:** REST polling — hit API every 60 seconds, diff against last state, produce only new/updated events.
 
-### Source 3 — Lanka Lens / Sri Lanka RSS Feeds (BLOCKED — DO NOT IMPLEMENT)
-> Phase 11. Do NOT build `connectors/slnews/` or `SLNewsEnrichmentJob` unless explicitly told. This is blocked pending external collaboration.
+### Source 3 — Lanka Lens / Sri Lanka RSS Feeds (ACTIVE — Phase 11 DONE)
+> Phase 11 complete. `connectors/slnews/` and `SLNewsEnrichmentJob` are implemented and active.
 
 ---
 
@@ -280,8 +280,9 @@ vega/
 3. **Commit message format:** `Phase N: <short description>` — e.g., `Phase 2: Wikimedia SSE Kafka source connector`
 4. **If a phase has independent sub-tasks, use subagents/parallel execution for speed.** If not, execute sequentially.
 5. **Every Java class gets a corresponding test class.** No exceptions. Run `mvn test` and fix all failures before committing.
-6. **Phase 11 (Lanka Lens / SL RSS) is BLOCKED. Do NOT implement it.**
-7. **After committing, push to origin/main.**
+6. **Phase 11 (Lanka Lens / SL RSS) is DONE.** SL News connector and enrichment job are implemented.
+7. **After all phases are complete, run the improvement loops** (see POST-PHASE IMPROVEMENT LOOPS below). Repeat up to 5 times to harden the codebase.
+8. **After committing, push to origin/main.**
 
 ---
 
@@ -632,7 +633,8 @@ vega/
 
 ## POST-PHASE IMPROVEMENT LOOPS
 
-> After ALL phases (2–10) are complete and committed, execute the following improvement cycle.
+> After ALL phases (2–11) are complete and committed, execute the following improvement cycle.
+> **Note:** Improvement loops are an ongoing quality practice — not a one-time step. Each iteration spawns analysis subagents, prioritizes findings, implements fixes, validates, and commits per category. By loop 5 the codebase should be production-hardened.
 
 ### IMPROVEMENT LOOP — REPEAT 5 TIMES
 
@@ -712,16 +714,15 @@ After all improvement loops are complete, verify:
 
 ## THINGS TO NEVER DO
 
-1. **Never implement Phase 11** (Lanka Lens / SL RSS) — it is blocked.
-2. **Never use Flink Table API** — DataStream API only.
-3. **Never hardcode credentials** — always environment variables.
-4. **Never skip tests** — every class gets tested.
-5. **Never use ZooKeeper** — Kafka runs in KRaft mode.
-6. **Never commit `.env` files** — only `.env.example`.
-7. **Never use `latest` tags in production K8s manifests** — pin specific versions.
-8. **Never skip Flink checkpointing** — exactly-once semantics always.
-9. **Never write Javadoc boilerplate** — only comment non-obvious WHY.
-10. **Never put secrets in Terraform state** — use Azure Key Vault references.
+1. **Never use Flink Table API** — DataStream API only.
+2. **Never hardcode credentials** — always environment variables.
+3. **Never skip tests** — every class gets tested.
+4. **Never use ZooKeeper** — Kafka runs in KRaft mode.
+5. **Never commit `.env` files** — only `.env.example`.
+6. **Never use `latest` tags in production K8s manifests** — pin specific versions.
+7. **Never skip Flink checkpointing** — exactly-once semantics always.
+8. **Never write Javadoc boilerplate** — only comment non-obvious WHY.
+9. **Never put secrets in Terraform state** — use Azure Key Vault references.
 
 ---
 
