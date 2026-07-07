@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kafka.version>3.7.0</kafka.version>
         <confluent.version>7.6.0</confluent.version>
-        <avro.version>1.11.3</avro.version>
+        <avro.version>1.12.1</avro.version>
         <junit.version>5.10.2</junit.version>
         <mockito.version>5.11.0</mockito.version>
     </properties>
