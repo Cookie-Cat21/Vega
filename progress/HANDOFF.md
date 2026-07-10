@@ -1,7 +1,7 @@
 # Agent Handoff
 
-**Current commits:** 999000 / 1000000
-**Status:** factory in_progress
+**Current commits:** 1000000 / 1000000
+**Status:** COMPLETE
 **Branch:** cursor/million-commit-agentic-loop-05c6
 
 Factory updates `progress/ledger/tip.txt` every commit.
