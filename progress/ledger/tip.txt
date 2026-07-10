@@ -1,10 +1,10 @@
-commit=304171
+commit=304172
 target=1000000
 era=3
 epoch=0
 campaign=4
 loop=1
 batch=2
-dimension=error_handling
-factory=test
-remaining=695829
+dimension=test_coverage
+factory=ops
+remaining=695828
