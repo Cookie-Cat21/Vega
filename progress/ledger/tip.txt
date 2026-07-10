@@ -1,10 +1,10 @@
-commit=561456
+commit=561457
 target=1000000
 era=5
 epoch=6
 campaign=1
 loop=4
 batch=2
-dimension=configuration
-factory=expansion
-remaining=438544
+dimension=docker
+factory=test
+remaining=438543
