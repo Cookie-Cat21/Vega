@@ -1,10 +1,10 @@
-commit=977200
+commit=977201
 target=1000000
 era=9
 epoch=7
 campaign=7
-loop=1
-batch=3
-dimension=ci_cd
-factory=knowledge
-remaining=22800
+loop=2
+batch=0
+dimension=monitoring
+factory=maintenance
+remaining=22799
