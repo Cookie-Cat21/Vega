@@ -179,19 +179,20 @@ def write_fast_import_stream(fp, start_n: int, end_n: int, branch: str, parent: 
 
 
 def run_fast_import(start_n: int, end_n: int, branch: str, parent: str) -> None:
-    proc = subprocess.Popen(
+    import io
+
+    buf = io.BytesIO()
+    write_fast_import_stream(buf, start_n, end_n, branch, parent)
+    payload = buf.getvalue()
+    proc = subprocess.run(
         ["git", "fast-import", "--quiet", "--done"],
         cwd=ROOT,
-        stdin=subprocess.PIPE,
+        input=payload,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    assert proc.stdin is not None
-    write_fast_import_stream(proc.stdin, start_n, end_n, branch, parent)
-    proc.stdin.close()
-    _, stderr = proc.communicate()
     if proc.returncode != 0:
-        sys.stderr.write(stderr.decode())
+        sys.stderr.write(proc.stderr.decode())
         raise RuntimeError(f"fast-import failed: {proc.returncode}")
 
 
