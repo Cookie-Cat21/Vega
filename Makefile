@@ -1,4 +1,4 @@
-.PHONY: up down logs monitoring monitoring-down status clean build test validate bootstrap teardown
+.PHONY: up down logs monitoring monitoring-down status clean build test validate bootstrap teardown million-progress million-validate-batch million-validate-loop million-sync
 
 build:
 	cd connectors/wikimedia && mvn package -DskipTests -q
@@ -56,3 +56,15 @@ bootstrap:
 
 teardown:
 	./scripts/teardown-local.sh
+
+million-progress:
+	./scripts/million/status.sh
+
+million-sync:
+	./scripts/million/sync-progress.sh
+
+million-validate-batch:
+	./scripts/million/validate-batch.sh
+
+million-validate-loop:
+	./scripts/million/validate-loop.sh

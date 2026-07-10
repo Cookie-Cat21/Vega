@@ -719,6 +719,30 @@ See `IMPROVEMENT_PLAN.md`, `RELEASE_NOTES.md`, and `CHANGELOG.md` for details.
 
 ---
 
+## MILLION-COMMIT AGENTIC LOOP (ACTIVE)
+
+> **Target: 1,000,000 commits.** The 200-commit roadmap is complete. All further agent work follows `MILLION_COMMIT_PLAN.md`.
+
+### Mandatory reads before coding
+1. `MILLION_COMMIT_PLAN.md` — hierarchy, protocol, factories, gates
+2. `progress/PROGRESS.json` — live cursor (era/epoch/campaign/loop/batch)
+3. `progress/HANDOFF.md` — previous session notes
+4. `progress/NEXT_BATCH.md` — next 25 atomic commits
+
+### Session rules
+1. Default scope: **one loop (100 commits = 4 batches of 25)**.
+2. Every commit message: `Improve: <category> — <summary> (commit N/1000000)`.
+3. Use `scripts/million/commit-one.sh` — it refuses empty commits.
+4. After each batch: `scripts/million/validate-batch.sh` then update progress.
+5. After each loop: `scripts/million/validate-loop.sh` + refresh `HANDOFF.md`.
+6. Never use `git commit --allow-empty`. Never inflate counts with whitespace-only churn.
+7. When local improvements saturate, unlock the next **era expansion factory** (new connectors, jobs, marts) — do not grind noise.
+
+### Hierarchy reminder
+`Commit → Batch(25) → Loop(100) → Campaign(1k) → Epoch(10k) → Era(100k) → 1M`
+
+---
+
 ## THINGS TO NEVER DO
 
 1. **Never use Flink Table API** — DataStream API only.
