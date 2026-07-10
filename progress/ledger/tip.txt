@@ -1,10 +1,10 @@
-commit=947570
+commit=947571
 target=1000000
 era=9
 epoch=4
 campaign=7
 loop=5
 batch=2
-dimension=code_quality
-factory=ops
-remaining=52430
+dimension=configuration
+factory=config
+remaining=52429
