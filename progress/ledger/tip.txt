@@ -1,10 +1,10 @@
-commit=4734
+commit=4735
 target=1000000
 era=1
 epoch=0
 campaign=4
 loop=7
 batch=1
-dimension=terraform
-factory=expansion
-remaining=995266
+dimension=ci_cd
+factory=test
+remaining=995265
