@@ -67,6 +67,12 @@ Java 21 · Kafka 3.7 (KRaft) · Flink 1.20 · Apache Iceberg 1.6 · Azure ADLS G
 - `k8s/` — AKS production manifests
 - `terraform/` — Azure infrastructure
 - `dashboards/grafana/` — Live pipeline dashboards
+- `MILLION_COMMIT_PLAN.md` — agentic loop plan toward 1,000,000 commits
+- `progress/` — live loop cursor, handoff, and batch checklists
+
+## Agentic improvement loop
+
+Vega runs a structured agentic loop toward **1,000,000 commits**. See [`MILLION_COMMIT_PLAN.md`](./MILLION_COMMIT_PLAN.md) and `make million-progress`.
 
 ## Quick Start
 

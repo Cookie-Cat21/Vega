@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "project": "vega",
+  "target_commits": 1000000,
+  "current_commits": 203,
+  "next_commit_number": 204,
+  "remaining_commits": 999797,
+  "era": 0,
+  "epoch": 0,
+  "campaign": 0,
+  "loop": 0,
+  "batch": 0,
+  "status": "planned",
+  "blocked_reason": null,
+  "primary_dimensions": [
+    "documentation",
+    "configuration",
+    "ci_cd"
+  ],
+  "secondary_dimensions": [
+    "test_coverage",
+    "monitoring"
+  ],
+  "active_factories": [
+    "test",
+    "ops",
+    "config",
+    "knowledge",
+    "maintenance"
+  ],
+  "unlocked_eras": [0],
+  "notes": "Era 0 bootstrap: land plan + orchestration, then run campaigns 0.1–0.9 toward commit 1000."
+}
