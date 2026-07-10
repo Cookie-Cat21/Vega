@@ -45,6 +45,8 @@ make teardown
 | `k8s/` | Kubernetes manifests |
 | `terraform/` | Azure infrastructure |
 | `scripts/` | Operational helper scripts |
+| `scripts/million/` | 1M-commit agentic loop helpers |
+| `progress/` | Loop cursor, handoff, batch checklists |
 | `docs/` | Architecture and contributor documentation |
 
 ## Running Tests
@@ -102,15 +104,28 @@ Phase N: short description
 For improvement work outside phased delivery:
 
 ```
-Improve: category — specific change
+Improve: category — specific change (commit N/1000000)
 ```
 
 Examples:
 
 - `Phase 4: Flink stream processing jobs — 5 jobs`
-- `Improve: test coverage — add edge case tests for all operators`
+- `Improve: test coverage — add edge case tests for all operators (commit 250/1000000)`
 
-One logical change per commit. Do not mix unrelated changes.
+One logical change per commit. Do not mix unrelated changes. Empty commits are forbidden.
+
+## Million-commit agentic loop
+
+Agents continuing the long-running improvement factory must:
+
+1. Read [`MILLION_COMMIT_PLAN.md`](../MILLION_COMMIT_PLAN.md)
+2. Follow [`progress/HANDOFF.md`](../progress/HANDOFF.md) and [`progress/NEXT_BATCH.md`](../progress/NEXT_BATCH.md)
+3. Use `scripts/million/commit-one.sh` for numbered commits
+4. Run `make million-validate-batch` at batch boundaries
+
+```bash
+make million-progress
+```
 
 ## Pull Request Process
 
