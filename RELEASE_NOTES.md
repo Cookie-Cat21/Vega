@@ -98,6 +98,22 @@ Five post-phase improvement loops delivered:
 - **Loop 4:** Integration test stubs, logback configs, HPA, probes
 - **Loop 5:** Documentation, OCI labels, parallelism tuning, final validation
 
+## Road to 1,000,000 Commits
+
+The 200-commit roadmap is complete. Ongoing work follows [`MILLION_COMMIT_PLAN.md`](./MILLION_COMMIT_PLAN.md):
+
+| Unit | Size |
+|------|------|
+| Batch | 25 commits |
+| Loop | 100 commits |
+| Campaign | 1,000 commits |
+| Epoch | 10,000 commits |
+| Era | 100,000 commits |
+
+**Era 0** bootstraps the factory (plan, progress tracker, scripts). **Eras 1–10** expand the product (new sources, lakehouse depth, platform, observability, security, performance, DX, APIs, hardening) until commit 1,000,000.
+
+Track live state in `progress/PROGRESS.json`. Agent handoff lives in `progress/HANDOFF.md`.
+
 ## Contributors
 
 Vega — Cookie-Cat21
