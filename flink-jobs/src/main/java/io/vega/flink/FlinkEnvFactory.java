@@ -2,6 +2,7 @@ package io.vega.flink;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.RestartStrategyOptions;
+import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
@@ -50,5 +51,22 @@ public final class FlinkEnvFactory {
 
     public static int parallelism() {
         return Integer.parseInt(System.getenv().getOrDefault("VEGA_FLINK_PARALLELISM", "2"));
+    }
+
+    /**
+     * Kafka source start position. Use {@code earliest} for local demos that produce
+     * fixtures around job submit; default {@code latest} matches streaming ingest.
+     */
+    public static OffsetsInitializer kafkaStartingOffsets() {
+        String mode = System.getenv().getOrDefault("VEGA_KAFKA_STARTING_OFFSETS", "latest");
+        if ("earliest".equalsIgnoreCase(mode)) {
+            return OffsetsInitializer.earliest();
+        }
+        return OffsetsInitializer.latest();
+    }
+
+    public static String consumerGroup(String base) {
+        String suffix = System.getenv().getOrDefault("VEGA_CONSUMER_GROUP_SUFFIX", "");
+        return suffix.isBlank() ? base : base + "-" + suffix;
     }
 }

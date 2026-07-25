@@ -10,7 +10,6 @@ import io.vega.flink.operators.CorrelationMatcher;
 import io.vega.flink.sinks.IcebergSinkFactory;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.co.CoProcessFunction;
@@ -29,16 +28,16 @@ public class CorrelationJob {
         KafkaSource<NaturalEvent> naturalSource = KafkaSource.<NaturalEvent>builder()
                 .setBootstrapServers(FlinkEnvFactory.kafkaBootstrapServers())
                 .setTopics("raw-natural-events")
-                .setGroupId("vega-correlation-natural")
-                .setStartingOffsets(OffsetsInitializer.latest())
+                .setGroupId(FlinkEnvFactory.consumerGroup("vega-correlation-natural"))
+                .setStartingOffsets(FlinkEnvFactory.kafkaStartingOffsets())
                 .setDeserializer(KafkaAvroMappers.naturalEventDeserializer(FlinkEnvFactory.schemaRegistryUrl()))
                 .build();
 
         KafkaSource<RawWikiEvent> wikiSource = KafkaSource.<RawWikiEvent>builder()
                 .setBootstrapServers(FlinkEnvFactory.kafkaBootstrapServers())
                 .setTopics("raw-wiki-events")
-                .setGroupId("vega-correlation-wiki")
-                .setStartingOffsets(OffsetsInitializer.latest())
+                .setGroupId(FlinkEnvFactory.consumerGroup("vega-correlation-wiki"))
+                .setStartingOffsets(FlinkEnvFactory.kafkaStartingOffsets())
                 .setDeserializer(KafkaAvroMappers.wikiEventDeserializer(FlinkEnvFactory.schemaRegistryUrl()))
                 .build();
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bounded local demo: build → up → submit WikiEnrichmentJob → fixtures → assert file sink.
+# Bounded local demo: build → up → fixtures → WikiEnrichmentJob → assert file sink.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -8,7 +8,8 @@ cd "${ROOT}"
 FIXTURE_COUNT="${VEGA_DEMO_FIXTURE_COUNT:-5}"
 OUTPUT_DIR="${ROOT}/data/vega-output/wiki_events_enriched"
 FLINK_REST="${FLINK_REST:-http://localhost:8081}"
-WAIT_SEC="${VEGA_DEMO_WAIT_SEC:-90}"
+WAIT_SEC="${VEGA_DEMO_WAIT_SEC:-120}"
+DEMO_SUFFIX="${VEGA_CONSUMER_GROUP_SUFFIX:-demo-$(date +%s)}"
 
 mkdir -p data/vega-output data/iceberg data/flink-checkpoints data/flink-savepoints
 chmod -R a+rwX data
@@ -17,7 +18,24 @@ echo "=== 1/6 Build artifacts ==="
 make build
 
 echo "=== 2/6 Start Compose stack ==="
-make up
+# Unique consumer group so each demo run re-reads fixture offsets with earliest.
+export VEGA_CONSUMER_GROUP_SUFFIX="${DEMO_SUFFIX}"
+# Compose does not pass host env into Flink by default — recreate with override.
+cat > docker-compose.demo.override.yml <<EOF
+services:
+  flink-jobmanager:
+    environment:
+      VEGA_CONSUMER_GROUP_SUFFIX: ${DEMO_SUFFIX}
+      VEGA_KAFKA_STARTING_OFFSETS: earliest
+  flink-taskmanager:
+    environment:
+      VEGA_CONSUMER_GROUP_SUFFIX: ${DEMO_SUFFIX}
+      VEGA_KAFKA_STARTING_OFFSETS: earliest
+EOF
+
+mkdir -p data/vega-output data/iceberg data/flink-checkpoints data/flink-savepoints
+chmod -R a+rwX data
+docker compose -f docker-compose.yml -f docker-compose.demo.override.yml up -d --build
 ./scripts/wait-for-kafka.sh
 ./scripts/wait-for-connect.sh
 
@@ -35,15 +53,23 @@ done
 echo "=== 3/6 Health check ==="
 ./scripts/health-check.sh
 
-echo "=== 4/6 Submit WikiEnrichmentJob ==="
-# Cancel prior wiki enrichment jobs so latest-offset consumers start cleanly.
+echo "=== 4/6 Produce ${FIXTURE_COUNT} wiki fixture events (before job submit) ==="
+rm -rf "${OUTPUT_DIR}"
+mkdir -p "${OUTPUT_DIR}"
+chmod -R a+rwX data
+./scripts/produce-fixtures.sh raw-wiki-events "${FIXTURE_COUNT}"
+
+echo "=== 5/6 Submit WikiEnrichmentJob (earliest + group suffix ${DEMO_SUFFIX}) ==="
 JOB_IDS="$(curl -sf "${FLINK_REST}/jobs" | grep -oE '"id":"[a-f0-9]+"' | cut -d'"' -f4 || true)"
 for jid in ${JOB_IDS}; do
-  name="$(curl -sf "${FLINK_REST}/jobs/${jid}" | grep -oE '"name":"[^"]+"' | head -1 | cut -d'"' -f4 || true)"
-  if [[ "${name}" == "WikiEnrichmentJob" ]]; then
-    echo "Cancelling existing job ${jid} (${name})"
-    curl -sf -X PATCH "${FLINK_REST}/jobs/${jid}?mode=cancel" >/dev/null || true
-    sleep 2
+  detail="$(curl -sf "${FLINK_REST}/jobs/${jid}" || true)"
+  if echo "${detail}" | grep -q '"name":"WikiEnrichmentJob"'; then
+    state="$(echo "${detail}" | grep -oE '"state":"[A-Z]+"' | head -1 | cut -d'"' -f4 || true)"
+    if [[ "${state}" == "RUNNING" || "${state}" == "RESTARTING" || "${state}" == "CREATED" ]]; then
+      echo "Cancelling existing job ${jid}"
+      curl -sf -X PATCH "${FLINK_REST}/jobs/${jid}?mode=cancel" >/dev/null || true
+      sleep 2
+    fi
   fi
 done
 
@@ -53,10 +79,6 @@ echo "Waiting for WikiEnrichmentJob to reach RUNNING..."
 elapsed=0
 while true; do
   running="$(curl -sf "${FLINK_REST}/jobs" || true)"
-  if echo "${running}" | grep -q 'WikiEnrichmentJob' && echo "${running}" | grep -q '"status":"RUNNING"'; then
-    break
-  fi
-  # Flink overview jobs endpoint returns id/status; fetch details as fallback
   for jid in $(echo "${running}" | grep -oE '"id":"[a-f0-9]+"' | cut -d'"' -f4); do
     detail="$(curl -sf "${FLINK_REST}/jobs/${jid}" || true)"
     if echo "${detail}" | grep -q '"name":"WikiEnrichmentJob"' && echo "${detail}" | grep -q '"state":"RUNNING"'; then
@@ -72,18 +94,9 @@ while true; do
   elapsed=$((elapsed + 2))
 done
 
-# Brief settle so the Kafka source is subscribed before fixtures land.
-sleep 5
-
-echo "=== 5/6 Produce ${FIXTURE_COUNT} wiki fixture events ==="
-rm -rf "${OUTPUT_DIR}"
-mkdir -p "${OUTPUT_DIR}"
-./scripts/produce-fixtures.sh raw-wiki-events "${FIXTURE_COUNT}"
-
 echo "=== 6/6 Wait for file sink output (up to ${WAIT_SEC}s) ==="
 elapsed=0
 while true; do
-  # Count non-empty part files (committed or in-progress).
   hits="$(find "${OUTPUT_DIR}" -type f ! -name '.*' -size +0c 2>/dev/null | wc -l | tr -d ' ')"
   inprogress="$(find "${OUTPUT_DIR}" -type f -name '*.inprogress*' -size +0c 2>/dev/null | wc -l | tr -d ' ')"
   total_bytes="$(find "${OUTPUT_DIR}" -type f -size +0c -printf '%s\n' 2>/dev/null | awk '{s+=$1} END {print s+0}')"
@@ -103,6 +116,7 @@ while true; do
     echo "Also verify:"
     echo "  Kafka UI:  http://localhost:8080  (topic raw-wiki-events)"
     echo "  Flink UI:  http://localhost:8081  (WikiEnrichmentJob RUNNING)"
+    rm -f docker-compose.demo.override.yml
     exit 0
   fi
   if [[ "${elapsed}" -ge "${WAIT_SEC}" ]]; then
@@ -111,7 +125,8 @@ while true; do
     curl -sf "${FLINK_REST}/jobs" >&2 || true
     echo "" >&2
     echo "TaskManager logs (tail):" >&2
-    docker logs --tail 80 vega-flink-taskmanager >&2 || true
+    docker logs --tail 120 vega-flink-taskmanager >&2 || true
+    rm -f docker-compose.demo.override.yml
     exit 1
   fi
   sleep 3

@@ -134,6 +134,8 @@ services:
       VEGA_FLINK_PARALLELISM: "1"
       VEGA_CHECKPOINT_INTERVAL_MS: "10000"
       VEGA_FILE_SINK_ROLLOVER_MS: "10000"
+      # Local sandbox: read from earliest so fixture demos are race-tolerant
+      VEGA_KAFKA_STARTING_OFFSETS: earliest
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         state.backend: hashmap
@@ -172,6 +174,7 @@ services:
       VEGA_FLINK_PARALLELISM: "1"
       VEGA_CHECKPOINT_INTERVAL_MS: "10000"
       VEGA_FILE_SINK_ROLLOVER_MS: "10000"
+      VEGA_KAFKA_STARTING_OFFSETS: earliest
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 4

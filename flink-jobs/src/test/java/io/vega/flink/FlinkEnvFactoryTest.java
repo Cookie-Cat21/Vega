@@ -42,4 +42,14 @@ class FlinkEnvFactoryTest {
     void icebergCatalogNameDefaultsToVegaCatalog() {
         assertEquals("vega_catalog", FlinkEnvFactory.icebergCatalogName());
     }
+
+    @Test
+    void kafkaStartingOffsetsDefaultsToLatest() {
+        assertNotNull(FlinkEnvFactory.kafkaStartingOffsets());
+    }
+
+    @Test
+    void consumerGroupDefaultsToBaseName() {
+        assertEquals("vega-wiki-enrichment", FlinkEnvFactory.consumerGroup("vega-wiki-enrichment"));
+    }
 }

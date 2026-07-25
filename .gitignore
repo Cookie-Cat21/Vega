@@ -3,6 +3,7 @@
 
 # Local demo output
 data/
+docker-compose.demo.override.yml
 
 # Java / Maven
 target/
