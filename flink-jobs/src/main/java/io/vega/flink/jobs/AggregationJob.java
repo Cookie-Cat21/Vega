@@ -10,7 +10,6 @@ import io.vega.flink.sinks.IcebergSinkFactory;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
@@ -25,8 +24,8 @@ public class AggregationJob {
         KafkaSource<RawWikiEvent> source = KafkaSource.<RawWikiEvent>builder()
                 .setBootstrapServers(FlinkEnvFactory.kafkaBootstrapServers())
                 .setTopics("raw-wiki-events")
-                .setGroupId("vega-aggregation")
-                .setStartingOffsets(OffsetsInitializer.latest())
+                .setGroupId(FlinkEnvFactory.consumerGroup("vega-aggregation"))
+                .setStartingOffsets(FlinkEnvFactory.kafkaStartingOffsets())
                 .setDeserializer(KafkaAvroMappers.wikiEventDeserializer(FlinkEnvFactory.schemaRegistryUrl()))
                 .build();
 

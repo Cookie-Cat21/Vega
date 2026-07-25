@@ -1,4 +1,4 @@
-.PHONY: up down logs monitoring monitoring-down status clean build test validate bootstrap teardown million-progress million-validate-batch million-validate-loop million-sync
+.PHONY: up down logs monitoring monitoring-down status clean build test validate bootstrap teardown demo register-connectors submit-jobs health-check
 
 build:
 	cd connectors/wikimedia && mvn package -DskipTests -q
@@ -13,7 +13,9 @@ test:
 	cd flink-jobs && mvn test -q
 
 up:
-	docker compose up -d
+	mkdir -p data/vega-output data/iceberg data/flink-checkpoints data/flink-savepoints
+	chmod -R a+rwX data 2>/dev/null || sudo chmod -R a+rwX data 2>/dev/null || true
+	docker compose up -d --build
 	@echo ""
 	@echo "=== Vega Local Stack ==="
 	@echo "Kafka UI:          http://localhost:8080"
@@ -21,6 +23,7 @@ up:
 	@echo "Schema Registry:   http://localhost:8082"
 	@echo "Kafka Connect:     http://localhost:8083"
 	@echo "Kafka Bootstrap:   localhost:9092"
+	@echo "File sink output:  ./data/vega-output"
 
 down:
 	docker compose down
@@ -45,6 +48,7 @@ status:
 clean:
 	docker compose down -v
 	docker compose -f docker-compose.monitoring.yml down -v 2>/dev/null || true
+	rm -rf data/vega-output data/iceberg data/flink-checkpoints data/flink-savepoints
 
 validate:
 	docker compose config
@@ -57,14 +61,14 @@ bootstrap:
 teardown:
 	./scripts/teardown-local.sh
 
-million-progress:
-	./scripts/million/status.sh
+register-connectors:
+	./scripts/register-connectors.sh
 
-million-sync:
-	./scripts/million/sync-progress.sh
+submit-jobs:
+	./scripts/submit-jobs.sh
 
-million-validate-batch:
-	./scripts/million/validate-batch.sh
+health-check:
+	./scripts/health-check.sh
 
-million-validate-loop:
-	./scripts/million/validate-loop.sh
+demo:
+	./scripts/demo-local.sh

@@ -1,6 +1,6 @@
 # Contributing to Vega
 
-Thank you for contributing to Vega. This guide covers local setup, testing, commit conventions, and the pull request process.
+Thank you for contributing to Vega. This guide covers local setup, testing, and the pull request process.
 
 ## Prerequisites
 
@@ -23,9 +23,15 @@ make bootstrap
 # Or step by step:
 make build
 make up
-./scripts/register-connectors.sh
-./scripts/submit-jobs.sh
+make register-connectors
+make submit-jobs
 make monitoring
+```
+
+Bounded local proof (fixture events → Flink file sink):
+
+```bash
+make demo
 ```
 
 Tear down when finished:
@@ -42,16 +48,12 @@ make teardown
 | `flink-jobs/` | Flink stream processing jobs |
 | `iceberg/schemas/` | Iceberg table DDL |
 | `dbt/` | Databricks analytics models |
-| `k8s/` | Kubernetes manifests |
-| `terraform/` | Azure infrastructure |
+| `k8s/` | Kubernetes manifests (Azure AKS scaffolding) |
+| `terraform/` | Azure infrastructure scaffolding |
 | `scripts/` | Operational helper scripts |
-| `scripts/million/` | 1M-commit agentic loop helpers |
-| `progress/` | Loop cursor, handoff, batch checklists |
 | `docs/` | Architecture and contributor documentation |
 
 ## Running Tests
-
-Run all module tests:
 
 ```bash
 make test
@@ -70,15 +72,16 @@ Integration tests (`*IT.java`) are disabled by default and require a running Kaf
 
 ## Validation
 
-Before opening a pull request, run the full validation suite:
+Before opening a pull request, run:
 
 ```bash
 make validate
+make test
 ```
 
-This runs `docker compose config` on both compose files and `terraform validate`.
+`make validate` checks Compose config and `terraform validate` (no cloud apply).
 
-Additional checks:
+Optional analytics check (needs placeholder Databricks env vars — see `.env.example`):
 
 ```bash
 cd dbt && dbt compile
@@ -86,46 +89,23 @@ cd dbt && dbt compile
 
 ## Coding Standards
 
-1. **Java 21** — Use records, virtual threads, pattern matching, and sealed interfaces where appropriate.
-2. **Flink DataStream API only** — Never use the Table API.
-3. **Avro schemas** — Define contracts in `.avsc` files; generate Java classes via `avro-maven-plugin`.
+1. **Java 21** — Prefer records, pattern matching, and clear naming.
+2. **Flink DataStream API** — Jobs in this repo use the DataStream API.
+3. **Avro schemas** — Define contracts in `.avsc` files; generate Java via `avro-maven-plugin` where used.
 4. **No hardcoded secrets** — Use environment variables; update `.env.example` for new vars.
-5. **Tests required** — Every Java class gets a corresponding `*Test.java`. Integration tests use `*IT.java` naming.
+5. **Tests required** — New Java logic should ship with `*Test.java`. Integration stubs use `*IT.java`.
 6. **Minimal comments** — Prefer clear naming over Javadoc boilerplate.
 
 ## Commit Conventions
 
-Use descriptive commit messages in this format:
+Use descriptive commit messages, for example:
 
 ```
-Phase N: short description
+Remove unused DLQ wiring from docs
+Fix Flink Compose Kafka bootstrap for local demo
 ```
 
-For improvement work outside phased delivery:
-
-```
-Improve: category — specific change (commit N/1000000)
-```
-
-Examples:
-
-- `Phase 4: Flink stream processing jobs — 5 jobs`
-- `Improve: test coverage — add edge case tests for all operators (commit 250/1000000)`
-
-One logical change per commit. Do not mix unrelated changes. Empty commits are forbidden.
-
-## Million-commit agentic loop
-
-Agents continuing the long-running improvement factory must:
-
-1. Read [`MILLION_COMMIT_PLAN.md`](../MILLION_COMMIT_PLAN.md)
-2. Follow [`progress/HANDOFF.md`](../progress/HANDOFF.md) and [`progress/NEXT_BATCH.md`](../progress/NEXT_BATCH.md)
-3. Use `scripts/million/commit-one.sh` for numbered commits
-4. Run `make million-validate-batch` at batch boundaries
-
-```bash
-make million-progress
-```
+One logical change per commit. Do not mix unrelated changes.
 
 ## Pull Request Process
 
@@ -133,11 +113,11 @@ make million-progress
 2. Make your changes with tests.
 3. Run `make test` and `make validate`.
 4. Fill out the pull request template (`.github/PULL_REQUEST_TEMPLATE.md`).
-5. Request review. CI must pass before merge.
+5. Request review. CI should pass before merge (unit tests do not require Azure secrets).
 
 ## Dependency Updates
 
-Dependabot opens weekly Maven PRs for all connector modules and `flink-jobs`. Review and merge dependency updates promptly to stay current with security patches.
+Dependabot opens weekly Maven PRs for connector modules and `flink-jobs`. Review and merge promptly for security patches.
 
 ## Reporting Issues
 

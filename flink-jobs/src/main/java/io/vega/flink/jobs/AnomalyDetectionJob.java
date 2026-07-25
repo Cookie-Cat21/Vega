@@ -13,7 +13,6 @@ import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
@@ -32,8 +31,8 @@ public class AnomalyDetectionJob {
         KafkaSource<RawWikiEvent> source = KafkaSource.<RawWikiEvent>builder()
                 .setBootstrapServers(FlinkEnvFactory.kafkaBootstrapServers())
                 .setTopics("raw-wiki-events")
-                .setGroupId("vega-anomaly-detection")
-                .setStartingOffsets(OffsetsInitializer.latest())
+                .setGroupId(FlinkEnvFactory.consumerGroup("vega-anomaly-detection"))
+                .setStartingOffsets(FlinkEnvFactory.kafkaStartingOffsets())
                 .setDeserializer(KafkaAvroMappers.wikiEventDeserializer(FlinkEnvFactory.schemaRegistryUrl()))
                 .build();
 

@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FLINK_REST="${FLINK_REST:-http://localhost:8081}"
-JAR="${FLINK_JAR:-/opt/flink/usrlib/vega-flink-jobs.jar}"
-PARALLELISM="${VEGA_FLINK_PARALLELISM:-2}"
+CONTAINER="${FLINK_JOBMANAGER_CONTAINER:-vega-flink-jobmanager}"
+JAR_IN_CONTAINER="${FLINK_JAR_IN_CONTAINER:-/opt/flink/usrlib/vega-flink-jobs.jar}"
+PARALLELISM="${VEGA_FLINK_PARALLELISM:-1}"
 
 JOBS=(
   "io.vega.flink.jobs.WikiEnrichmentJob"
@@ -14,14 +16,27 @@ JOBS=(
   "io.vega.flink.jobs.SLNewsEnrichmentJob"
 )
 
+if [[ "${1:-}" == "--wiki-only" ]]; then
+  JOBS=("io.vega.flink.jobs.WikiEnrichmentJob")
+fi
+
+if ! curl -sf --max-time 5 "${FLINK_REST}/overview" >/dev/null; then
+  echo "Flink JobManager not reachable at ${FLINK_REST}" >&2
+  exit 1
+fi
+
+if ! docker exec "${CONTAINER}" test -f "${JAR_IN_CONTAINER}"; then
+  echo "Flink JAR missing in container at ${JAR_IN_CONTAINER}." >&2
+  echo "Run 'make build' first so Compose can mount flink-jobs/target/*.jar." >&2
+  exit 1
+fi
+
 for job in "${JOBS[@]}"; do
   echo "Submitting ${job}..."
-  curl -s -X POST "${FLINK_REST}/jars/upload" -F "jarfile=@${JAR}" > /dev/null 2>&1 || true
-  JAR_ID=$(curl -s "${FLINK_REST}/jars" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-  curl -s -X POST "${FLINK_REST}/jars/${JAR_ID}/run" \
-    -H "Content-Type: application/json" \
-    -d "{\"entryClass\": \"${job}\", \"parallelism\": ${PARALLELISM}}"
-  echo ""
+  docker exec "${CONTAINER}" flink run -d \
+    -p "${PARALLELISM}" \
+    -c "${job}" \
+    "${JAR_IN_CONTAINER}"
 done
 
-echo "All Vega Flink jobs submitted."
+echo "Submitted ${#JOBS[@]} Flink job(s)."

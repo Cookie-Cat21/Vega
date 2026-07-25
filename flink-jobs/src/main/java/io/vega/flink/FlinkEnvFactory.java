@@ -2,6 +2,7 @@ package io.vega.flink;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.RestartStrategyOptions;
+import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
@@ -13,10 +14,11 @@ public final class FlinkEnvFactory {
 
     public static StreamExecutionEnvironment create() {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.enableCheckpointing(60_000L);
+        long checkpointIntervalMs = checkpointIntervalMs();
+        env.enableCheckpointing(checkpointIntervalMs);
         env.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
-        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(30_000L);
-        env.getCheckpointConfig().setCheckpointTimeout(120_000L);
+        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(Math.min(30_000L, checkpointIntervalMs / 2));
+        env.getCheckpointConfig().setCheckpointTimeout(Math.max(120_000L, checkpointIntervalMs * 4));
 
         Configuration config = new Configuration();
         config.set(RestartStrategyOptions.RESTART_STRATEGY, "fixed-delay");
@@ -25,6 +27,10 @@ public final class FlinkEnvFactory {
         env.configure(config);
 
         return env;
+    }
+
+    public static long checkpointIntervalMs() {
+        return Long.parseLong(System.getenv().getOrDefault("VEGA_CHECKPOINT_INTERVAL_MS", "60000"));
     }
 
     public static String kafkaBootstrapServers() {
@@ -45,5 +51,22 @@ public final class FlinkEnvFactory {
 
     public static int parallelism() {
         return Integer.parseInt(System.getenv().getOrDefault("VEGA_FLINK_PARALLELISM", "2"));
+    }
+
+    /**
+     * Kafka source start position. Use {@code earliest} for local demos that produce
+     * fixtures around job submit; default {@code latest} matches streaming ingest.
+     */
+    public static OffsetsInitializer kafkaStartingOffsets() {
+        String mode = System.getenv().getOrDefault("VEGA_KAFKA_STARTING_OFFSETS", "latest");
+        if ("earliest".equalsIgnoreCase(mode)) {
+            return OffsetsInitializer.earliest();
+        }
+        return OffsetsInitializer.latest();
+    }
+
+    public static String consumerGroup(String base) {
+        String suffix = System.getenv().getOrDefault("VEGA_CONSUMER_GROUP_SUFFIX", "");
+        return suffix.isBlank() ? base : base + "-" + suffix;
     }
 }

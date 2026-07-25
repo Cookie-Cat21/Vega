@@ -5,6 +5,7 @@ KAFKA_HOST="${KAFKA_HOST:-localhost}"
 KAFKA_PORT="${KAFKA_PORT:-9092}"
 FLINK_REST="${FLINK_REST:-http://localhost:8081}"
 SCHEMA_REGISTRY="${SCHEMA_REGISTRY:-http://localhost:8082}"
+CONNECT_REST="${CONNECT_REST:-http://localhost:8083}"
 
 failures=0
 
@@ -36,6 +37,7 @@ check_http() {
 check_tcp "Kafka" "${KAFKA_HOST}" "${KAFKA_PORT}"
 check_http "Flink" "${FLINK_REST}/overview"
 check_http "Schema Registry" "${SCHEMA_REGISTRY}/subjects"
+check_http "Kafka Connect" "${CONNECT_REST}/"
 
 if [[ "${failures}" -gt 0 ]]; then
   echo ""

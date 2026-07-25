@@ -62,11 +62,14 @@ public final class IcebergSinkFactory {
     }
 
     static <T> void writeToFile(DataStream<T> stream, String table) {
+        long rolloverMs = Long.parseLong(
+                System.getenv().getOrDefault("VEGA_FILE_SINK_ROLLOVER_MS", "60000"));
         FileSink<T> sink = FileSink
                 .forRowFormat(new Path("/tmp/vega-output/" + table), new SimpleStringEncoder<T>("UTF-8"))
                 .withRollingPolicy(org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies
                         .DefaultRollingPolicy.builder()
-                        .withRolloverInterval(Duration.ofMinutes(5))
+                        .withRolloverInterval(Duration.ofMillis(rolloverMs))
+                        .withInactivityInterval(Duration.ofMillis(Math.max(5_000L, rolloverMs / 2)))
                         .build())
                 .build();
         stream.sinkTo(sink).name("file-sink-" + table);

@@ -14,16 +14,17 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      CLUSTER_ID: VmVnYVN0cmVhbWluZ0xha2U
+      # Must be a valid base64-encoded UUID (16 bytes). Previous value decoded to 17 bytes and crashed Kafka.
+      CLUSTER_ID: otfhRtXhQkethvC4ejhuOQ
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_JMX_PORT: 9101
       KAFKA_JMX_HOSTNAME: localhost
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
     volumes:
-      - kafka-data:/tmp/kraft-combined-logs
+      - kafka-data:/var/lib/kafka/data
     networks:
       - vega
     healthcheck:
@@ -115,7 +116,9 @@ services:
       - vega
 
   flink-jobmanager:
-    image: flink:1.20-java21
+    build:
+      context: ./docker/flink-j21
+    image: vega-flink:1.20-java21
     hostname: flink-jobmanager
     container_name: vega-flink-jobmanager
     ports:
@@ -123,23 +126,38 @@ services:
       - "9249:9249"
     command: jobmanager
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      VEGA_ICEBERG_ENABLED: "false"
+      ICEBERG_WAREHOUSE_PATH: /tmp/iceberg/warehouse
+      ICEBERG_CATALOG_NAME: vega_catalog
+      VEGA_FLINK_PARALLELISM: "1"
+      VEGA_CHECKPOINT_INTERVAL_MS: "10000"
+      VEGA_FILE_SINK_ROLLOVER_MS: "10000"
+      # Local sandbox: read from earliest so fixture demos are race-tolerant
+      VEGA_KAFKA_STARTING_OFFSETS: earliest
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         state.backend: hashmap
         state.checkpoints.dir: file:///tmp/flink-checkpoints
         state.savepoints.dir: file:///tmp/flink-savepoints
-        execution.checkpointing.interval: 60000
+        execution.checkpointing.interval: 10000
         metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
         metrics.reporter.prom.port: 9249
     volumes:
-      - flink-checkpoints:/tmp/flink-checkpoints
-      - flink-savepoints:/tmp/flink-savepoints
+      # Named volumes often mount as root; Flink runs as non-root. Use host binds with 0777.
+      - ./data/flink-checkpoints:/tmp/flink-checkpoints
+      - ./data/flink-savepoints:/tmp/flink-savepoints
+      - ./data/vega-output:/tmp/vega-output
+      - ./data/iceberg:/tmp/iceberg/warehouse
       - ./flink-jobs/target/vega-flink-jobs-1.0.0-SNAPSHOT.jar:/opt/flink/usrlib/vega-flink-jobs.jar:ro
     networks:
       - vega
 
   flink-taskmanager:
-    image: flink:1.20-java21
+    build:
+      context: ./docker/flink-j21
+    image: vega-flink:1.20-java21
     hostname: flink-taskmanager
     container_name: vega-flink-taskmanager
     depends_on:
@@ -148,17 +166,29 @@ services:
       - "9250:9249"
     command: taskmanager
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      VEGA_ICEBERG_ENABLED: "false"
+      ICEBERG_WAREHOUSE_PATH: /tmp/iceberg/warehouse
+      ICEBERG_CATALOG_NAME: vega_catalog
+      VEGA_FLINK_PARALLELISM: "1"
+      VEGA_CHECKPOINT_INTERVAL_MS: "10000"
+      VEGA_FILE_SINK_ROLLOVER_MS: "10000"
+      VEGA_KAFKA_STARTING_OFFSETS: earliest
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 4
         state.backend: hashmap
         state.checkpoints.dir: file:///tmp/flink-checkpoints
         state.savepoints.dir: file:///tmp/flink-savepoints
+        execution.checkpointing.interval: 10000
         metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
         metrics.reporter.prom.port: 9249
     volumes:
-      - flink-checkpoints:/tmp/flink-checkpoints
-      - flink-savepoints:/tmp/flink-savepoints
+      - ./data/flink-checkpoints:/tmp/flink-checkpoints
+      - ./data/flink-savepoints:/tmp/flink-savepoints
+      - ./data/vega-output:/tmp/vega-output
+      - ./data/iceberg:/tmp/iceberg/warehouse
       - ./flink-jobs/target/vega-flink-jobs-1.0.0-SNAPSHOT.jar:/opt/flink/usrlib/vega-flink-jobs.jar:ro
     networks:
       - vega
@@ -166,8 +196,6 @@ services:
 volumes:
   kafka-data:
   connect-plugins:
-  flink-checkpoints:
-  flink-savepoints:
 
 networks:
   vega:

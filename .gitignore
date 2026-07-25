@@ -1,6 +1,10 @@
 # Environment
 .env
 
+# Local demo output
+data/
+docker-compose.demo.override.yml
+
 # Java / Maven
 target/
 *.class

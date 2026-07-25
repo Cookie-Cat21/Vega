@@ -8,7 +8,6 @@ import io.vega.flink.metrics.SLNewsMetricsMapper;
 import io.vega.flink.sinks.IcebergSinkFactory;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
@@ -21,8 +20,8 @@ public class SLNewsEnrichmentJob {
         KafkaSource<RawSLNewsArticle> source = KafkaSource.<RawSLNewsArticle>builder()
                 .setBootstrapServers(FlinkEnvFactory.kafkaBootstrapServers())
                 .setTopics("raw-sl-news")
-                .setGroupId("vega-slnews-enrichment")
-                .setStartingOffsets(OffsetsInitializer.latest())
+                .setGroupId(FlinkEnvFactory.consumerGroup("vega-slnews-enrichment"))
+                .setStartingOffsets(FlinkEnvFactory.kafkaStartingOffsets())
                 .setDeserializer(KafkaAvroMappers.slNewsDeserializer(FlinkEnvFactory.schemaRegistryUrl()))
                 .build();
 

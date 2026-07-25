@@ -2,9 +2,7 @@
 
 ADRs capture significant decisions for Vega. One ADR per decision; prefer small, dated records.
 
-| ADR | Title | Status |
-|-----|-------|--------|
-| [0001](./0001-million-commit-loop.md) | Million-commit agentic loop | Accepted |
+No ADRs are currently retained. The previous million-commit-loop ADR was removed during the portfolio detox — it documented agentic commit-farming, not a streaming-lakehouse design choice.
 
 ## Format
 

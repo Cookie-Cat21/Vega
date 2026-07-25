@@ -1,6 +1,6 @@
 # Vega Architecture
 
-Vega is a real-time streaming lakehouse that correlates global natural disasters with Wikipedia edit activity. The pipeline ingests live event streams, processes them with Apache Flink, stores results in Apache Iceberg on Azure Data Lake Storage Gen2, and exposes analytics through Databricks/dbt and Grafana dashboards.
+Vega is a streaming lakehouse **sandbox** that correlates natural events with Wikipedia edit activity and Sri Lanka news. Locally it runs on Docker Compose (Kafka → Flink → file sink or optional Iceberg). Azure ADLS, AKS, and Databricks pieces are scaffolding and need credentials to operate.
 
 ## High-Level Data Flow
 
@@ -63,7 +63,7 @@ Each data source is implemented as a custom Java Kafka Connect source connector:
 | NASA EONET | `connectors/eonet` | `raw-natural-events` | REST polling (60s) |
 | Lanka Lens / SL News | `connectors/slnews` | `raw-sl-news` | RSS polling (5m) |
 
-All connectors serialize records with Avro schemas registered in Confluent Schema Registry. Unparseable events are routed to dead-letter topics via the shared `DeadLetterPublisher` utility.
+All connectors serialize records with Avro schemas registered in Confluent Schema Registry. A shared `DeadLetterPublisher` utility exists in each connector module for routing bad payloads to `vega-dead-letter`, but source tasks do not call it yet — treat DLQ as planned wiring, not a live guarantee.
 
 ### Kafka Topics
 
@@ -112,9 +112,9 @@ Iceberg tables are defined in `iceberg/schemas/` and written by Flink via `Icebe
 | `edit_anomalies` | `date(timestamp)` | Anomaly alerting |
 | `edit_aggregates` | `date(window_start)` | Throughput metrics |
 | `event_correlations` | `date(window_start)` | Reaction time analysis |
-| `sl_news_articles` | `date(published_at)` | Regional news coverage |
+| `sl_news_enriched` | `date(published_at)` | Regional news coverage |
 
-Local development uses a Hadoop catalog at `/tmp/iceberg/warehouse`. Production uses ADLS Gen2 with credentials from environment variables.
+Local default (`VEGA_ICEBERG_ENABLED=false`) writes Flink output to a file sink under `./data/vega-output`. With Iceberg enabled, a Hadoop catalog warehouse defaults to `/tmp/iceberg/warehouse`; ADLS Gen2 (`abfs://`) needs Azure OAuth env vars.
 
 ## Analytics Layer
 
@@ -127,8 +127,8 @@ dbt models in `dbt/` transform Iceberg tables into marts:
 
 | Environment | Orchestration | Provisioning |
 |---|---|---|
-| Local | Docker Compose | `make up` / `make bootstrap` |
-| Production | AKS + Strimzi + Flink Operator | Terraform + GitHub Actions |
+| Local | Docker Compose | `make up` / `make bootstrap` / `make demo` |
+| Cloud scaffolding | AKS + Strimzi + Flink Operator | Terraform + GitHub Actions (secrets required) |
 
 Terraform (`terraform/`) provisions AKS, ADLS Gen2, Azure Blob (checkpoints), ACR, and networking. Kubernetes manifests in `k8s/` define Strimzi Kafka, Schema Registry, Flink deployments, and monitoring.
 
@@ -138,7 +138,7 @@ Prometheus scrapes Flink TaskManagers, Kafka brokers, and Schema Registry. Alert
 
 Flink operators expose custom metrics via `CountingMapper`, `CountingFilter`, and `CorrelationMetricsSink` under the `vega` metric group.
 
-## Deployment Topology (Production)
+## Deployment Topology (Azure scaffolding)
 
 ```mermaid
 flowchart LR
@@ -168,6 +168,6 @@ flowchart LR
 
 1. **Avro-first contracts** — Schema Registry enforces compatibility across connectors, Flink jobs, and Iceberg tables.
 2. **DataStream API only** — No Flink Table API; all jobs use explicit operators for testability and tuning.
-3. **Exactly-once semantics** — Flink checkpointing to Azure Blob with Kafka offset commits.
+3. **Checkpointed Flink jobs** — Compose uses local checkpoint dirs; Azure Blob checkpoints are for the AKS path.
 4. **Virtual threads** — HTTP clients in connectors use Java 21 virtual threads for efficient I/O.
-5. **Dead-letter queues** — Unparseable events never block the pipeline; they land in DLQ topics for inspection.
+5. **DLQ utility present** — `DeadLetterPublisher` is ready to wire; not yet invoked from source tasks.
