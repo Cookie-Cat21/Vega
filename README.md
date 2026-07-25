@@ -1,8 +1,10 @@
-# Vega — Real-Time Streaming Lakehouse Pipeline
+# Vega — streaming lakehouse sandbox
 
 [![Test All](https://github.com/Cookie-Cat21/Vega/actions/workflows/test-all.yml/badge.svg)](https://github.com/Cookie-Cat21/Vega/actions/workflows/test-all.yml)
 
-Vega tracks global natural events and real-time human reactions to them. A wildfire starts (NASA EONET) → Wikipedia edits spike → Vega captures the correlation live.
+Correlates natural events (NASA EONET), Wikimedia edit spikes, and Sri Lanka news through Kafka → Flink → Iceberg (or a local file sink).
+
+> **Portfolio / learning system.** Demonstrates streaming lakehouse mechanics locally (and Azure scaffolding). Not a production SLA product.
 
 ## Architecture
 
@@ -25,12 +27,12 @@ flowchart LR
     end
 
     subgraph storage [Lakehouse]
-        Iceberg[(Iceberg on ADLS Gen2)]
+        Sink[Iceberg or local file sink]
     end
 
     subgraph analytics [Analytics]
         DBT[dbt on Databricks]
-        Grafana[Grafana Dashboards]
+        Grafana[Grafana]
     end
 
     Wiki --> KC
@@ -39,84 +41,74 @@ flowchart LR
     KC --> Kafka
     Kafka --> SR
     Kafka --> Flink
-    Flink --> Iceberg
-    Iceberg --> DBT
-    Flink --> Prometheus
-    Prometheus --> Grafana
+    Flink --> Sink
+    Sink --> DBT
+    Flink --> Grafana
 ```
 
-## Tech Stack
+Local default: Flink writes to a **file sink** under `./data/vega-output` (`VEGA_ICEBERG_ENABLED=false`). Iceberg on ADLS Gen2 is scaffolded and needs Azure credentials.
 
-Java 21 · Kafka 3.7 (KRaft) · Flink 1.20 · Apache Iceberg 1.6 · Azure ADLS Gen2 · Databricks · dbt · Terraform · Prometheus · Grafana
+## Tech stack
 
-## Data Sources
+| Layer | Tech |
+|---|---|
+| Language | Java 21 |
+| Ingest | Kafka Connect source connectors (Avro) |
+| Broker | Kafka KRaft (Compose: Confluent 7.6) |
+| Processing | Apache Flink 1.20 |
+| Lakehouse | Apache Iceberg (optional) / local file sink |
+| Analytics | dbt + Databricks (cloud) |
+| Infra scaffolding | Terraform, AKS manifests, Helm |
+| Observability | Prometheus, Grafana |
 
-| Source | Type | Status |
+## Data sources
+
+| Source | Type | Cadence |
 |---|---|---|
-| Wikimedia EventStreams | SSE (real-time) | Active |
-| NASA EONET | REST polling (60s) | Active |
-| Sri Lanka RSS Feeds (Lanka Lens) | RSS polling (5m) | Active |
+| Wikimedia EventStreams | SSE | continuous |
+| NASA EONET | REST poll | ~60s |
+| Sri Lanka RSS (Lanka Lens) | RSS poll | ~5m |
 
-## Project Structure
+## Project structure
 
-- `connectors/wikimedia/` — SSE Kafka source connector
-- `connectors/slnews/` — Sri Lanka RSS Kafka source connector (Lanka Lens)
-- `flink-jobs/` — Six Flink stream processing jobs
-- `iceberg/schemas/` — Iceberg table DDL
-- `dbt/` — Databricks analytics models
-- `k8s/` — AKS production manifests
-- `terraform/` — Azure infrastructure
-- `dashboards/grafana/` — Live pipeline dashboards
-- `MILLION_COMMIT_PLAN.md` — agentic loop plan toward 1,000,000 commits
-- `progress/` — live loop cursor, handoff, and batch checklists
+```
+connectors/          Kafka Connect sources (wikimedia, eonet, slnews)
+flink-jobs/          Six Flink DataStream jobs + tests
+iceberg/schemas/     Iceberg table DDL
+dbt/                 Databricks analytics models
+docker-compose.yml   Local Kafka / Connect / Flink stack
+scripts/             Bootstrap, demo, register, submit helpers
+terraform/           Azure infra scaffolding
+k8s/ helm/           AKS-oriented manifests
+docs/                Architecture, runbook, failure modes, local demo
+```
 
-## Agentic improvement loop
+## Quick start
 
-Vega runs a structured agentic loop toward **1,000,000 commits**. See [`MILLION_COMMIT_PLAN.md`](./MILLION_COMMIT_PLAN.md) and `make million-progress`.
-
-## Quick Start
+Prerequisites: Java 21, Maven 3.9+, Docker Compose v2.
 
 ```bash
-# Build connectors and Flink jobs
-cd connectors/wikimedia && mvn package -DskipTests && cd ../..
-cd connectors/eonet && mvn package -DskipTests && cd ../..
-cd flink-jobs && mvn package -DskipTests && cd ..
+cp .env.example .env
 
-# Start the core stack (Kafka, Flink, Schema Registry, Kafka UI)
+# Build connector + Flink JARs, start Compose, register connectors, submit jobs
+make bootstrap
+
+# Or step by step:
+make build
 make up
+make register-connectors
+make submit-jobs
+```
 
-# Deploy Kafka Connect sources
-curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
-  "name": "wikimedia-source",
-  "config": {
-    "connector.class": "io.vega.connector.wikimedia.WikimediaSourceConnector",
-    "tasks.max": "1",
-    "topic": "raw-wiki-events"
-  }
-}'
+Bounded local proof (no live Wikimedia required) — fixtures → Flink → file sink:
 
-curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
-  "name": "eonet-source",
-  "config": {
-    "connector.class": "io.vega.connector.eonet.EONETSourceConnector",
-    "tasks.max": "1",
-    "topic": "raw-natural-events"
-  }
-}'
+```bash
+make demo
+```
 
-curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
-  "name": "slnews-source",
-  "config": {
-    "connector.class": "io.vega.connector.slnews.SLNewsSourceConnector",
-    "tasks.max": "1",
-    "topic": "raw-sl-news"
-  }
-}'
+Optional monitoring:
 
-# Submit Flink jobs
-./scripts/submit-jobs.sh
-
-# Start monitoring (Prometheus, Grafana)
+```bash
 make monitoring
 ```
 
@@ -129,9 +121,56 @@ make monitoring
 | Schema Registry | http://localhost:8082 |
 | Kafka Connect | http://localhost:8083 |
 | Prometheus | http://localhost:9090 |
-| Grafana | http://localhost:3000 |
+| Grafana | http://localhost:3000 (`admin` / `vega`) |
 
-Copy `.env.example` to `.env` and configure environment variables for production deployments.
+## How to verify
+
+1. **Kafka UI** (`http://localhost:8080`) — topics such as `raw-wiki-events` show messages (live connectors or `make demo` fixtures).
+2. **Flink UI** (`http://localhost:8081`) — jobs listed as running (e.g. `WikiEnrichmentJob`).
+3. **Sink path** — with Iceberg disabled (default), rows land under `./data/vega-output/<table>/`. `make demo` asserts this automatically.
+4. **dbt (optional)** — `cd dbt && dbt compile` with `DATABRICKS_HOST`, `DATABRICKS_HTTP_PATH`, `DATABRICKS_TOKEN` set (placeholders work for compile-only CI).
+
+See [`docs/LOCAL_DEMO.md`](docs/LOCAL_DEMO.md) for the step-by-step path.
+
+## Tests & CI
+
+| Workflow | What it covers |
+|---|---|
+| [`test-all.yml`](.github/workflows/test-all.yml) | Maven unit tests for all connectors + `flink-jobs` |
+| `build-*-connector.yml` / `build-flink-jobs.yml` | Per-module package |
+| `compose-validate.yml` | `docker compose config` |
+| `terraform-validate.yml` | `terraform validate` (no apply) |
+| `dbt-compile.yml` | `dbt compile` with placeholder Databricks env |
+| `deploy-to-aks.yml` | AKS deploy — **requires Azure secrets**; expect failure without them |
+
+```bash
+make test
+make validate
+```
+
+CI does **not** run a full live Wikimedia → Iceberg E2E. Prefer `make demo` locally for a bounded data-movement check.
+
+## Trade-offs / known gaps
+
+- **Cloud deploy needs secrets** — Terraform apply and `deploy-to-aks.yml` are scaffolding until Azure credentials exist.
+- **dbt env names** — `dbt/profiles.yml` expects `DATABRICKS_*` (not `DBT_DATABRICKS_*`). CI is aligned to the non-prefixed names.
+- **Shallow / disabled tests** — `*IT.java` integration stubs are `@Disabled` and not asserted in CI.
+- **DLQ** — `DeadLetterPublisher` exists in connector modules but is not wired from source tasks yet.
+- **Local lakehouse** — no MinIO in Compose; default proof path is the Flink file sink. Real Iceberg on ADLS needs `VEGA_ICEBERG_ENABLED=true` and Azure OAuth.
+- **Live connectors** — Wikimedia/EONET/RSS need egress; use `make demo` fixtures when offline.
+
+## Next hardening
+
+1. Wire connector DLQ publishing on parse failures and add a Connect smoke assertion in CI.
+2. Add a local object-store stand-in (e.g. MinIO) for Iceberg without Azure.
+3. Enable one bounded integration test that runs under Compose in CI.
+
+## Docs
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — data flow and job map
+- [`docs/LOCAL_DEMO.md`](docs/LOCAL_DEMO.md) — verification walkthrough
+- [`docs/FAILURE_MODES.md`](docs/FAILURE_MODES.md) — duplicates, late events, DLQ, checkpoints
+- [`docs/AUDIT.md`](docs/AUDIT.md) — detox audit notes
 
 ## License
 

@@ -138,7 +138,7 @@ Prometheus scrapes Flink TaskManagers, Kafka brokers, and Schema Registry. Alert
 
 Flink operators expose custom metrics via `CountingMapper`, `CountingFilter`, and `CorrelationMetricsSink` under the `vega` metric group.
 
-## Deployment Topology (Production)
+## Deployment Topology (Azure scaffolding)
 
 ```mermaid
 flowchart LR

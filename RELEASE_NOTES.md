@@ -2,22 +2,22 @@
 
 **Release date:** July 2026
 
-Vega v1.0.0 delivers a production-grade, end-to-end real-time streaming lakehouse that correlates global natural disasters with Wikipedia edit activity.
+Vega v1.0.0 is a streaming lakehouse sandbox that correlates natural events with Wikipedia edit activity and Sri Lanka news. Local Compose proves ingest + Flink processing; Azure / Databricks pieces are scaffolding and need secrets to run.
 
 ## Highlights
 
-- Three live data sources ingesting into Kafka with Avro schema enforcement
-- Six Flink stream processing jobs with exactly-once semantics
-- Iceberg lakehouse tables on Azure ADLS Gen2
-- dbt analytics marts on Databricks
-- Full AKS deployment with Terraform provisioning
-- Prometheus + Grafana observability with alerting
+- Three data sources into Kafka with Avro schemas (Wikimedia SSE, NASA EONET, SL RSS)
+- Six Flink DataStream jobs with checkpointing and metrics hooks
+- Iceberg table DDL + optional Flink Iceberg sink (local default: file sink)
+- dbt model stubs for Databricks
+- Compose stack + Prometheus/Grafana monitoring compose
+- AKS / Terraform / CI scaffolding (deploy workflows need Azure secrets)
 
 ## Phase Summary
 
 ### Phase 2 — Wikimedia SSE Connector
 
-Kafka Connect source connector consuming Wikimedia EventStreams SSE. Produces ~50–100 edit events/second to `raw-wiki-events` with Avro serialization and dead-letter handling.
+Kafka Connect source connector consuming Wikimedia EventStreams SSE into `raw-wiki-events` with Avro serialization.
 
 ### Phase 3 — NASA EONET Connector
 
@@ -34,85 +34,50 @@ Six DataStream jobs:
 | AnomalyDetectionJob | `raw-wiki-events` | `edit_anomalies` |
 | AggregationJob | `raw-wiki-events` | `edit_aggregates` |
 | CorrelationJob | dual-stream | `event_correlations` |
-| SLNewsEnrichmentJob | `raw-sl-news` | `sl_news_articles` |
+| SLNewsEnrichmentJob | `raw-sl-news` | `sl_news_enriched` |
 
 ### Phase 5 — Iceberg Table Schemas
 
-SQL DDL for all lakehouse tables with partitioning strategies and column documentation.
+SQL DDL for lakehouse tables under `iceberg/schemas/`.
 
 ### Phase 6 — dbt Analytics
 
-Staging models and five mart models including `event_reaction_time` — the key metric answering how fast the world reacts to disasters on Wikipedia.
+Staging models and mart models (including `event_reaction_time`) intended for Databricks SQL warehouses.
 
 ### Phase 7 — Kubernetes Manifests
 
-Production-ready AKS manifests for Strimzi Kafka, Schema Registry, Flink Operator deployments, and monitoring ConfigMaps.
+AKS-oriented manifests for Strimzi Kafka, Schema Registry, Flink Operator deployments, and monitoring ConfigMaps.
 
 ### Phase 8 — Terraform Infrastructure
 
-Azure provisioning for AKS, ADLS Gen2, Blob storage (checkpoints), ACR, and networking with remote state backend.
+Azure provisioning modules for AKS, ADLS Gen2, Blob storage (checkpoints), ACR, and networking.
 
 ### Phase 9 — CI/CD
 
-GitHub Actions workflows for per-module builds, full test matrix, AKS deployment, Terraform validation, dbt compile, and Docker Compose validation.
+GitHub Actions workflows for per-module builds, full test matrix, AKS deployment (secrets required), Terraform validation, dbt compile, and Docker Compose validation.
 
 ### Phase 10 — Observability
 
-Grafana dashboard (`vega-overview.json`) with pipeline health, Wikipedia insights, natural events, correlation panels, and JVM metrics. Prometheus alert rules for consumer lag, checkpoint failures, ingest stalls, and service health.
+Grafana dashboard (`vega-overview.json`) and Prometheus alert rules for consumer lag, checkpoint failures, ingest stalls, and service health.
 
 ### Phase 11 — Lanka Lens / Sri Lanka RSS (SL News)
 
-SL News Kafka Connect source connector polling Sri Lanka RSS feeds. `SLNewsEnrichmentJob` processes articles into the lakehouse. Completes the third data source for regional news correlation.
-
-## Post-Release Improvements
-
-Five improvement loops hardened the codebase across:
-
-- Error handling with retries, circuit breakers, and dead-letter queues
-- Expanded test coverage including integration test stubs and metrics operator tests
-- Security hardening (K8s network policies, secret management)
-- Performance tuning (Flink operator chaining, checkpoint intervals)
-- CI/CD enhancements (Dependabot, validation workflows, PR template)
-- Documentation (`docs/ARCHITECTURE.md`, `docs/CONTRIBUTING.md`)
-- Monitoring additions (per-source ingest stall alerts, custom Flink metrics)
+SL News Kafka Connect source connector polling Sri Lanka RSS feeds. `SLNewsEnrichmentJob` processes articles into the sink path.
 
 ## Upgrade Notes
 
-- Requires Java 21, Kafka 3.7 (KRaft), Flink 1.20, Iceberg 1.6
-- Copy `.env.example` to `.env` and configure Azure credentials for production
-- Run `make bootstrap` for local development or deploy via GitHub Actions to AKS
+- Requires Java 21, Kafka (Compose uses Confluent 7.6 / KRaft), Flink 1.20
+- Copy `.env.example` to `.env`
+- Run `make bootstrap` or `make demo` for local development
+- Cloud deploy via Terraform / `deploy-to-aks.yml` needs Azure credentials
 
 ## Known Limitations
 
 - Integration tests (`*IT.java`) require a running local stack and are disabled in CI by default
 - Reverse geocoding in EONETEnrichmentJob uses a static lookup table, not a live API
 - dbt compile in CI uses placeholder Databricks credentials
-
-## Improvement Loops (Commits 13–200)
-
-Five post-phase improvement loops delivered:
-
-- **Loop 1:** Unit test coverage, Flink metrics, DLQ publishers, Docker/Makefile DX
-- **Loop 2:** K8s Kafka Connect, NetworkPolicy, Terraform Key Vault + Databricks
-- **Loop 3:** dbt tests, Grafana panels, scripts, runbook, CI workflows
-- **Loop 4:** Integration test stubs, logback configs, HPA, probes
-- **Loop 5:** Documentation, OCI labels, parallelism tuning, final validation
-
-## Road to 1,000,000 Commits
-
-The 200-commit roadmap is complete. Ongoing work follows [`MILLION_COMMIT_PLAN.md`](./MILLION_COMMIT_PLAN.md):
-
-| Unit | Size |
-|------|------|
-| Batch | 25 commits |
-| Loop | 100 commits |
-| Campaign | 1,000 commits |
-| Epoch | 10,000 commits |
-| Era | 100,000 commits |
-
-**Era 0** bootstraps the factory (plan, progress tracker, scripts). **Eras 1–10** expand the product (new sources, lakehouse depth, platform, observability, security, performance, DX, APIs, hardening) until commit 1,000,000.
-
-Track live state in `progress/PROGRESS.json`. Agent handoff lives in `progress/HANDOFF.md`.
+- `DeadLetterPublisher` is present in connectors but not wired from source tasks yet
+- Local default sink is files under `./data/vega-output` (`VEGA_ICEBERG_ENABLED=false`); ADLS Iceberg needs Azure OAuth
 
 ## Contributors
 
