@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - 'dbt/**'
+      - '.github/workflows/dbt-compile.yml'
 
 jobs:
   compile:
@@ -33,6 +34,7 @@ jobs:
       - name: dbt compile
         run: dbt compile --no-version-check
         env:
-          DBT_DATABRICKS_HOST: https://placeholder.cloud.databricks.com
-          DBT_DATABRICKS_HTTP_PATH: /sql/1.0/warehouses/placeholder
-          DBT_DATABRICKS_TOKEN: placeholder
+          # profiles.yml uses env_var('DATABRICKS_*') — keep names aligned
+          DATABRICKS_HOST: https://placeholder.cloud.databricks.com
+          DATABRICKS_HTTP_PATH: /sql/1.0/warehouses/placeholder
+          DATABRICKS_TOKEN: placeholder

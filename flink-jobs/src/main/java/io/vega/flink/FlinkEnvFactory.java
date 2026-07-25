@@ -13,10 +13,11 @@ public final class FlinkEnvFactory {
 
     public static StreamExecutionEnvironment create() {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.enableCheckpointing(60_000L);
+        long checkpointIntervalMs = checkpointIntervalMs();
+        env.enableCheckpointing(checkpointIntervalMs);
         env.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
-        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(30_000L);
-        env.getCheckpointConfig().setCheckpointTimeout(120_000L);
+        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(Math.min(30_000L, checkpointIntervalMs / 2));
+        env.getCheckpointConfig().setCheckpointTimeout(Math.max(120_000L, checkpointIntervalMs * 4));
 
         Configuration config = new Configuration();
         config.set(RestartStrategyOptions.RESTART_STRATEGY, "fixed-delay");
@@ -25,6 +26,10 @@ public final class FlinkEnvFactory {
         env.configure(config);
 
         return env;
+    }
+
+    public static long checkpointIntervalMs() {
+        return Long.parseLong(System.getenv().getOrDefault("VEGA_CHECKPOINT_INTERVAL_MS", "60000"));
     }
 
     public static String kafkaBootstrapServers() {
