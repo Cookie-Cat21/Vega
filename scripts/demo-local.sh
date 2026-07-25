@@ -10,7 +10,8 @@ OUTPUT_DIR="${ROOT}/data/vega-output/wiki_events_enriched"
 FLINK_REST="${FLINK_REST:-http://localhost:8081}"
 WAIT_SEC="${VEGA_DEMO_WAIT_SEC:-90}"
 
-mkdir -p data/vega-output data/iceberg
+mkdir -p data/vega-output data/iceberg data/flink-checkpoints data/flink-savepoints
+chmod -R a+rwX data
 
 echo "=== 1/6 Build artifacts ==="
 make build

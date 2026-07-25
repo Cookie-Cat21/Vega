@@ -13,7 +13,8 @@ test:
 	cd flink-jobs && mvn test -q
 
 up:
-	mkdir -p data/vega-output data/iceberg
+	mkdir -p data/vega-output data/iceberg data/flink-checkpoints data/flink-savepoints
+	chmod -R a+rwX data
 	docker compose up -d --build
 	@echo ""
 	@echo "=== Vega Local Stack ==="
@@ -47,7 +48,7 @@ status:
 clean:
 	docker compose down -v
 	docker compose -f docker-compose.monitoring.yml down -v 2>/dev/null || true
-	rm -rf data/vega-output data/iceberg
+	rm -rf data/vega-output data/iceberg data/flink-checkpoints data/flink-savepoints
 
 validate:
 	docker compose config

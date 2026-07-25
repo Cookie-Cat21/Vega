@@ -143,8 +143,9 @@ services:
         metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
         metrics.reporter.prom.port: 9249
     volumes:
-      - flink-checkpoints:/tmp/flink-checkpoints
-      - flink-savepoints:/tmp/flink-savepoints
+      # Named volumes often mount as root; Flink runs as non-root. Use host binds with 0777.
+      - ./data/flink-checkpoints:/tmp/flink-checkpoints
+      - ./data/flink-savepoints:/tmp/flink-savepoints
       - ./data/vega-output:/tmp/vega-output
       - ./data/iceberg:/tmp/iceberg/warehouse
       - ./flink-jobs/target/vega-flink-jobs-1.0.0-SNAPSHOT.jar:/opt/flink/usrlib/vega-flink-jobs.jar:ro
@@ -181,8 +182,8 @@ services:
         metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
         metrics.reporter.prom.port: 9249
     volumes:
-      - flink-checkpoints:/tmp/flink-checkpoints
-      - flink-savepoints:/tmp/flink-savepoints
+      - ./data/flink-checkpoints:/tmp/flink-checkpoints
+      - ./data/flink-savepoints:/tmp/flink-savepoints
       - ./data/vega-output:/tmp/vega-output
       - ./data/iceberg:/tmp/iceberg/warehouse
       - ./flink-jobs/target/vega-flink-jobs-1.0.0-SNAPSHOT.jar:/opt/flink/usrlib/vega-flink-jobs.jar:ro
@@ -192,8 +193,6 @@ services:
 volumes:
   kafka-data:
   connect-plugins:
-  flink-checkpoints:
-  flink-savepoints:
 
 networks:
   vega:

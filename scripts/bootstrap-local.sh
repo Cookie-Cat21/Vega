@@ -3,7 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-mkdir -p "${ROOT}/data/vega-output" "${ROOT}/data/iceberg"
+mkdir -p "${ROOT}/data/vega-output" "${ROOT}/data/iceberg" \
+  "${ROOT}/data/flink-checkpoints" "${ROOT}/data/flink-savepoints"
+chmod -R a+rwX "${ROOT}/data"
 
 echo "=== Building Vega artifacts ==="
 make -C "${ROOT}" build
