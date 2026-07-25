@@ -157,6 +157,7 @@ CI does **not** run a full live Wikimedia → Iceberg E2E. Prefer `make demo` lo
 - **Shallow / disabled tests** — `*IT.java` integration stubs are `@Disabled` and not asserted in CI.
 - **DLQ** — `DeadLetterPublisher` exists in connector modules but is not wired from source tasks yet.
 - **Local lakehouse** — no MinIO in Compose; default proof path is the Flink file sink. Real Iceberg on ADLS needs `VEGA_ICEBERG_ENABLED=true` and Azure OAuth.
+- **Flink image** — Docker Hub has no `flink:1.20-java21`. Compose builds `vega-flink:1.20-java21` from `docker/flink-j21` (Flink 1.20.5 + Temurin 21).
 - **Live connectors** — Wikimedia/EONET/RSS need egress; use `make demo` fixtures when offline.
 
 ## Next hardening

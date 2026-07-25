@@ -115,7 +115,9 @@ services:
       - vega
 
   flink-jobmanager:
-    image: flink:1.20-java21
+    build:
+      context: ./docker/flink-j21
+    image: vega-flink:1.20-java21
     hostname: flink-jobmanager
     container_name: vega-flink-jobmanager
     ports:
@@ -149,7 +151,9 @@ services:
       - vega
 
   flink-taskmanager:
-    image: flink:1.20-java21
+    build:
+      context: ./docker/flink-j21
+    image: vega-flink:1.20-java21
     hostname: flink-taskmanager
     container_name: vega-flink-taskmanager
     depends_on:

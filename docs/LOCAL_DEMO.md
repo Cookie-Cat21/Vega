@@ -6,6 +6,7 @@ This walkthrough shows Kafka → Flink → local file sink without Azure secrets
 
 - Java 21, Maven 3.9+, Docker Compose v2
 - ~4 GB RAM free for Compose
+- First `make up` / `make demo` builds `vega-flink:1.20-java21` (Flink 1.20 has no official Java 21 Hub tag)
 
 ## One-command path
 

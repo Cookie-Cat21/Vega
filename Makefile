@@ -13,7 +13,8 @@ test:
 	cd flink-jobs && mvn test -q
 
 up:
-	docker compose up -d
+	mkdir -p data/vega-output data/iceberg
+	docker compose up -d --build
 	@echo ""
 	@echo "=== Vega Local Stack ==="
 	@echo "Kafka UI:          http://localhost:8080"
