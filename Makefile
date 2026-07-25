@@ -14,7 +14,7 @@ test:
 
 up:
 	mkdir -p data/vega-output data/iceberg data/flink-checkpoints data/flink-savepoints
-	chmod -R a+rwX data
+	chmod -R a+rwX data 2>/dev/null || sudo chmod -R a+rwX data 2>/dev/null || true
 	docker compose up -d --build
 	@echo ""
 	@echo "=== Vega Local Stack ==="

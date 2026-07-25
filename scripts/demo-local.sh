@@ -12,7 +12,7 @@ WAIT_SEC="${VEGA_DEMO_WAIT_SEC:-120}"
 DEMO_SUFFIX="${VEGA_CONSUMER_GROUP_SUFFIX:-demo-$(date +%s)}"
 
 mkdir -p data/vega-output data/iceberg data/flink-checkpoints data/flink-savepoints
-chmod -R a+rwX data
+chmod -R a+rwX data 2>/dev/null || sudo chmod -R a+rwX data 2>/dev/null || true
 
 echo "=== 1/6 Build artifacts ==="
 make build
@@ -33,8 +33,6 @@ services:
       VEGA_KAFKA_STARTING_OFFSETS: earliest
 EOF
 
-mkdir -p data/vega-output data/iceberg data/flink-checkpoints data/flink-savepoints
-chmod -R a+rwX data
 docker compose -f docker-compose.yml -f docker-compose.demo.override.yml up -d --build
 ./scripts/wait-for-kafka.sh
 ./scripts/wait-for-connect.sh
@@ -54,9 +52,9 @@ echo "=== 3/6 Health check ==="
 ./scripts/health-check.sh
 
 echo "=== 4/6 Produce ${FIXTURE_COUNT} wiki fixture events (before job submit) ==="
-rm -rf "${OUTPUT_DIR}"
+rm -rf "${OUTPUT_DIR}" 2>/dev/null || sudo rm -rf "${OUTPUT_DIR}" 2>/dev/null || true
 mkdir -p "${OUTPUT_DIR}"
-chmod -R a+rwX data
+chmod -R a+rwX data 2>/dev/null || sudo chmod -R a+rwX data 2>/dev/null || true
 ./scripts/produce-fixtures.sh raw-wiki-events "${FIXTURE_COUNT}"
 
 echo "=== 5/6 Submit WikiEnrichmentJob (earliest + group suffix ${DEMO_SUFFIX}) ==="
